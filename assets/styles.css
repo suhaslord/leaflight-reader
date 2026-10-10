@@ -41,3 +41,120 @@
 @media(max-width:950px){.ai-results{grid-template-columns:repeat(3,minmax(0,1fr))}.ai-mode{display:none}}
 @media(max-width:690px){.ai-concierge{padding:20px 17px 18px;margin-top:20px}.ai-header{gap:12px;align-items:flex-start}.ai-symbol{width:41px;height:41px;font-size:26px;border-radius:12px}.ai-heading h2{font-size:22px}.ai-heading .eyebrow{font-size:8px}.ai-heading p{font-size:10px}.ai-form{display:flex;flex-direction:column;margin-top:15px;gap:8px}.ai-form textarea{min-height:76px;font-size:11.5px}.ai-form button{min-height:42px}.ai-prompts{gap:6px}.ai-prompts:before{width:100%;margin-bottom:2px}.ai-prompts button{font-size:9.5px;padding:7px 10px}.ai-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:17px 12px}.ai-results .book-cover{height:205px}.ai-response-heading h3{font-size:22px}.ai-response-tag{display:none}.ai-reason{font-size:9.5px}}
 @media(max-width:400px){.ai-results .book-cover{height:183px}}
+
+/* Immersive e-reader: calm paper, deliberate book typography, and simple page controls.
+   Inspired by familiar e-reader conventions rather than duplicating any product branding. */
+.reader{--reader-bg:#efede7;--reader-page:#fffefa;--reader-ink:#302f2a;--reader-muted:#828175;--reader-line:#deded5;--reader-page-max:780px;--reader-line-height:1.85;background:var(--reader-bg)}
+.reader[data-theme=paper]{--reader-bg:#efede7;--reader-page:#fffefa;--reader-ink:#302f2a;--reader-muted:#828175;--reader-line:#deded5}
+.reader[data-theme=sepia]{--reader-bg:#e8ddc9;--reader-page:#f8eed9;--reader-ink:#594631;--reader-muted:#887963;--reader-line:#ded0b7}
+.reader[data-theme=night]{--reader-bg:#151c1b;--reader-page:#212a28;--reader-ink:#e2e8df;--reader-muted:#9caaa1;--reader-line:#435049}
+.reader[data-width=narrow]{--reader-page-max:650px}
+.reader[data-width=standard]{--reader-page-max:780px}
+.reader[data-width=wide]{--reader-page-max:1020px}
+.reader[data-spacing=compact]{--reader-line-height:1.5}
+.reader[data-spacing=comfortable]{--reader-line-height:1.85}
+.reader[data-spacing=airy]{--reader-line-height:2.2}
+.reader-toolbar{background:var(--reader-page);height:76px;border-bottom:1px solid var(--reader-line);padding:0 3.2%;box-shadow:0 2px 12px #00000007;position:relative;z-index:2}
+.reader-back{color:var(--reader-ink);min-width:100px;min-height:44px;border-radius:8px;justify-content:flex-start;transition:background .15s}
+.reader-back:hover,.icon-button:hover{background:var(--reader-line)}
+.reader-back .back-label{font-size:12px}
+.reader-heading{gap:2px}
+.reader-heading .reader-kicker{font-family:var(--sans);font-size:8px;font-weight:800;letter-spacing:1.9px;color:var(--reader-muted)}
+.reader-heading strong{font-size:18px;line-height:1.3;letter-spacing:-.2px}
+.reader-heading span:last-child{font-size:10px}
+.reader-actions{gap:8px;justify-content:flex-end;min-width:125px}
+.reader-actions .icon-button{height:41px;width:41px;border:1px solid var(--reader-line);border-radius:10px;color:var(--reader-ink);background:transparent;text-decoration:none;font-size:20px}
+.reader-actions .icon-button:hover{background:var(--reader-line)}
+.reader-source-icon{display:grid;place-items:center}
+.reader-scroll{background:var(--reader-bg);scrollbar-color:var(--reader-line) transparent}
+.reader-document{background:var(--reader-page);color:var(--reader-ink);border-radius:3px;width:min(var(--reader-page-max),calc(100% - 72px));min-height:calc(100% - 48px);padding:86px clamp(30px,6vw,96px) 110px;margin:24px auto;box-shadow:0 3px 28px #1a292013;font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:var(--reader-line-height);letter-spacing:0;transition:background-color .15s}
+.reader[data-font=sans] .reader-document{font-family:var(--sans)}
+.reader-document h1{max-width:100%;font-size:clamp(32px,3.4vw,45px);line-height:1.2;letter-spacing:-1px;text-align:center;margin:0 auto 13px;text-wrap:balance;color:var(--reader-ink)}
+.reader-document .book-byline{font:normal 13px var(--sans);letter-spacing:.3px;margin:0 0 44px;color:var(--reader-muted)}
+.reader-document .book-byline:after{content:'✦';font-family:Georgia,serif;font-size:18px;display:block;margin:32px auto 0;color:var(--reader-muted);opacity:.65}
+.reader-document .reader-notice{margin:0 0 47px;padding:15px 20px;background:var(--reader-bg);border:0;border-left:3px solid #8fa88c;color:var(--reader-muted);border-radius:0 5px 5px 0;line-height:1.65;font:11px/1.7 var(--sans)}
+.reader-text{line-height:var(--reader-line-height);white-space:pre-wrap;overflow-wrap:anywhere;text-align:left}
+.reader-settings{width:min(490px,95vw);max-height:calc(100dvh - 88px);overflow-y:auto;right:3.2%;top:69px;padding:25px 25px 20px;box-shadow:0 24px 70px #131d1829;background:var(--reader-page);border:1px solid var(--reader-line)}
+.reader-settings>div{min-height:39px;align-items:center}
+.reader-settings label,.reader-settings .settings-label{font:700 12px var(--sans);color:var(--reader-ink)}
+.reader-settings .stepper,.reader-settings .segmented{background:var(--reader-bg);gap:3px;padding:4px;border:1px solid var(--reader-line)}
+.reader-settings .stepper button,.reader-settings .segmented button{min-height:34px;padding:8px 12px;border-radius:6px;color:var(--reader-ink);font-size:11px}
+.reader-settings .stepper button:hover,.reader-settings .segmented button:hover{background:var(--reader-line)}
+.reader-settings .segmented button.active{background:var(--reader-page);box-shadow:0 1px 7px #00000018;color:var(--reader-ink)}
+.reader-settings-note{margin:2px 0 0;font:10px/1.6 var(--sans);color:var(--reader-muted);border-top:1px solid var(--reader-line);padding-top:11px}
+.reader-bottom{height:76px;display:block;padding:0 3.2%;background:var(--reader-page);border-top:1px solid var(--reader-line);font:11px var(--sans)}
+.reader-bottom-inner{height:100%;width:100%;display:flex;gap:20px;align-items:center}
+.reader-page-actions{display:flex;align-items:center;gap:8px;flex:none}
+.reader-page-actions button{border:1px solid var(--reader-line);border-radius:8px;width:35px;height:37px;display:grid;place-items:center;background:transparent;color:var(--reader-ink);font:28px/1 Georgia,serif;padding:0 0 4px}
+.reader-page-actions button:hover{background:var(--reader-bg)}
+.reader-page-actions #readerProgress{font-size:11px;font-variant-numeric:tabular-nums;color:var(--reader-muted);min-width:56px;text-align:center}
+.reader-seek{min-width:45px;flex:1;width:auto;height:20px;appearance:none;background:transparent;outline-offset:5px;cursor:pointer;margin:0}
+.reader-seek::-webkit-slider-runnable-track{height:5px;background:linear-gradient(to right,#60876b 0%,#60876b var(--seek,0%),var(--reader-line) var(--seek,0%),var(--reader-line) 100%);border-radius:99px}
+.reader-seek::-webkit-slider-thumb{appearance:none;width:16px;height:16px;background:#567c62;border:3px solid var(--reader-page);border-radius:50%;margin-top:-5.5px;box-shadow:0 1px 4px #0005}
+.reader-seek::-moz-range-track{height:5px;background:var(--reader-line);border-radius:99px}
+.reader-seek::-moz-range-progress{background:#60876b;height:5px;border-radius:99px}
+.reader-seek::-moz-range-thumb{height:15px;width:15px;border:2px solid var(--reader-page);background:#567c62;border-radius:50%}
+.reader-footer-links{display:flex;align-items:center;gap:13px;white-space:nowrap}
+.reader-bottom .reader-footer-links button{padding:10px 5px;font-size:10px;color:var(--reader-ink)}
+.reader-bottom .reader-footer-links button:hover{color:#61866c;text-decoration:underline}
+.reader-bottom .reader-footer-links a{font-size:10px;color:var(--reader-muted)}
+.reader-progress-track{height:2px;top:-1px}
+.reader-progress-track div{background:#6d9475}
+.reader .icon-button.is-saved svg{fill:#ba8071}
+@media(max-width:900px){
+ .reader-document{width:calc(100% - 38px);padding:54px clamp(25px,5vw,55px) 85px;margin:18px auto}
+ .reader-bottom-inner{gap:10px}.reader-footer-links{gap:7px}
+}
+@media(max-width:690px){
+ .reader-toolbar{height:66px;padding:0 12px;gap:5px}
+ .reader-back{min-width:48px;max-width:56px;justify-content:center}
+ .reader-back .back-label{display:none}
+ .reader-actions{min-width:110px;gap:4px}
+ .reader-actions .icon-button{width:35px;height:35px;border-radius:8px}
+ .reader-heading .reader-kicker{font-size:8px}
+ .reader-heading strong{font-size:13px;max-width:100%}
+ .reader-heading span:last-child{font-size:9px}
+ .reader-document,.reader[data-width=narrow] .reader-document,.reader[data-width=wide] .reader-document{
+  width:100%;min-height:100%;border-radius:0;margin:0;padding:43px 24px 90px;box-shadow:none
+ }
+ .reader-document h1{font-size:34px}
+ .reader-document .book-byline{margin-bottom:31px}
+ .reader-document .reader-notice{padding:12px 13px;margin-bottom:33px}
+ .reader-settings{top:61px;right:8px;padding:17px;max-height:calc(100dvh - 140px)}
+ .reader-settings .stepper button,.reader-settings .segmented button{padding:7px 8px;font-size:10px}
+ .reader-bottom{height:92px;padding:8px 14px max(5px,env(safe-area-inset-bottom))}
+ .reader-bottom-inner{display:grid;grid-template-columns:auto 1fr;grid-template-rows:19px 42px;align-content:center;column-gap:12px;row-gap:8px}
+ .reader-seek{grid-column:1/-1;grid-row:1;width:100%}
+ .reader-page-actions{grid-column:1;grid-row:2;gap:4px}
+ .reader-page-actions button{min-height:37px;min-width:34px}
+ .reader-page-actions #readerProgress{min-width:49px;font-size:10px}
+ .reader-footer-links{grid-column:2;grid-row:2;justify-content:flex-end;gap:8px}
+ .reader-bottom .reader-footer-links button{min-height:36px;font-size:9px;padding:7px 3px}
+ .reader-bottom .reader-footer-links a{display:none}
+}
+@media(max-width:380px){
+ .reader-bottom{padding-inline:7px}
+ .reader-bottom-inner{column-gap:4px}
+ .reader-page-actions #readerProgress{min-width:42px}
+ .reader-page-actions button{min-width:31px;width:31px}
+ .reader-footer-links{gap:4px}
+ .reader-bottom .reader-footer-links button{font-size:8px}
+}
+
+.reader-scroll,.reader-document,.reader-text{overflow-anchor:none}
+/* Comfortable touch targets for reader controls, without clipping on narrow phones. */
+@media(max-width:690px){
+ .reader-actions{min-width:124px;gap:3px}
+ .reader-actions .icon-button{width:39px;height:40px}
+ .reader-back{min-height:42px}
+ .reader-settings .stepper button,.reader-settings .segmented button{min-height:40px}
+ .reader-bottom{height:102px}
+ .reader-bottom-inner{grid-template-rows:26px 42px}
+ .reader-seek{height:27px}
+ .reader-page-actions button{min-height:42px;height:42px}
+ .reader-bottom .reader-footer-links button{min-height:42px}
+}
+@media(max-width:380px){
+ .reader-actions{min-width:117px}
+ .reader-actions .icon-button{width:37px;height:40px}
+}

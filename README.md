@@ -53,3 +53,25 @@ Import this GitHub repository into Vercel. The root is a static site with two No
 
 ## Privacy
 This app does not collect account information. Saved books and reading progress stay in localStorage on the current device; clearing browser data removes them. External catalog and text hosts necessarily receive network requests.
+
+## Reader QA and design
+Leaflight's immersive reading view follows familiar **Kindle-like reader patterns**: distraction-free paper layout, serif and sans fonts, warm/dark color modes, line-spacing and page-margin controls, a reading-position slider, page-step navigation, bookmarks, and keyboard navigation. It does not copy Kindle branding, graphics, or source code.
+
+Run the comprehensive tests after installing Playwright and its Chromium browser:
+
+    npm test
+    npm run check
+    BASE_URL=https://leaflight-reader.vercel.app node tests/browser-check.cjs
+    BASE_URL=https://leaflight-reader.vercel.app node tests/ai-browser-check.cjs
+    BASE_URL=https://leaflight-reader.vercel.app node tests/release-audit.cjs
+
+For reproducible network-error and race-condition testing, start a local test server (which uses synthetic public-domain test text when the stress tests intercept requests):
+
+    node tests/dev-server.cjs
+    node tests/reader-stress.cjs
+    node tests/edge-audit.cjs
+    node tests/races-audit.cjs
+    node tests/storage-audit.cjs
+    node tests/mobile-reader-audit.cjs
+
+The catalog is a snapshot, not a live complete inventory; some titles only support opening their Project Gutenberg edition. Saving progress is per browser/device, without an account.
