@@ -75,3 +75,16 @@ For reproducible network-error and race-condition testing, start a local test se
     node tests/mobile-reader-audit.cjs
 
 The catalog is a snapshot, not a live complete inventory; some titles only support opening their Project Gutenberg edition. Saving progress is per browser/device, without an account.
+
+## Latest quality review
+
+See [the release QA report](docs/qa_release.md) for button-by-button testing, stress tests, responsive checks, accessibility results and known limitations.
+
+To run the optional automated accessibility check:
+
+    npm install --no-save playwright@1.56.1 @axe-core/playwright
+    npx playwright install chromium
+    node tests/dev-server.cjs
+    BASE_URL=http://127.0.0.1:4173 node tests/accessibility-audit.cjs
+
+The accessibility suite audits homepage, browse, saved library, reader settings, and paper/sepia/night modes on both desktop and mobile. It does not require an external paid service.

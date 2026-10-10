@@ -158,3 +158,33 @@
  .reader-actions{min-width:117px}
  .reader-actions .icon-button{width:37px;height:40px}
 }
+
+/* Accessibility: keep soft colors, but make secondary text legible at WCAG AA contrast. */
+.side-label{color:#5b665c}
+.nav-link{color:#58655a}
+.side-note small,.side-footer{color:#5d6b5f}
+.breadcrumb{color:#626d64}
+.section-eyebrow{color:#46694d}
+.section-sub{color:#5c685d}
+.chip{color:#59655b}
+.book-meta p{color:#5f6c60}
+.site-footer,.site-footer a{color:#5c685c}
+.ai-heading p,.ai-response-heading p,.ai-reason{color:#586a5c}
+.ai-prompts:before{color:#606b62}
+.ai-mode,.ai-response-tag{color:#415e48}
+.hero-copy>p{color:#4f6755}
+.banner-details span,.banner-details small{color:#5c705e}
+.mobile-link{color:#5a675d}
+.search-box input::placeholder,.ai-form textarea::placeholder{color:#647166}
+.reader[data-theme=paper]{--reader-muted:#646f65}
+.reader[data-theme=sepia]{--reader-muted:#6a5948}
+.reader[data-theme=night]{--reader-muted:#b6c5bb}
+.reader-document .reader-notice{color:var(--reader-muted)}
+.reader-heading .reader-kicker{color:var(--reader-muted)}
+.reader-heading span:last-child{color:var(--reader-muted)}
+.reader-bottom .reader-footer-links a{color:var(--reader-muted)}
+.reader[data-theme=paper] .reader-notice{color:#4a5d4e}
+.reader[data-theme=sepia] .reader-notice{color:#564735}
+.reader[data-theme=night] .reader-notice{color:#d0dfd2}
+.grid-status p{color:#536357}
+.reader[data-theme=paper] .stepper output{color:#475c4c}
