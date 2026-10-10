@@ -112,6 +112,35 @@ function readSettings(){
     },240);
   }
 }
+// Break long public-domain editions into contained text blocks.
+// This preserves the complete edition while avoiding a multi-megabyte
+// single text node that forces the browser to reflow the entire book.
+function renderBookText(content){
+  const wrapper=document.createElement('div');
+  wrapper.className='reader-text';
+  const text=content.replace(/\r\n?/g,'\n');
+  const fragment=document.createDocumentFragment();
+  let start=0;
+  const target=11000, min=6000, max=14500;
+  while(start<text.length){
+    let end=Math.min(start+target,text.length);
+    if(end<text.length){
+      const prior=text.lastIndexOf('\n',end);
+      if(prior>=start+min)end=prior+1;
+      else{
+        const next=text.indexOf('\n',end);
+        if(next>=0 && next<start+max)end=next+1;
+      }
+    }
+    const block=document.createElement('div');
+    block.className='reader-text-block';
+    block.textContent=text.slice(start,end);
+    fragment.append(block);
+    start=end;
+  }
+  wrapper.append(fragment);
+  return wrapper;
+}
 function updateBookmarkAction(){
   if(state.readerId===null){$('#jumpBookmark').hidden=true;return;}
   const saved=safeGet('bookmark.'+state.readerId,null);
@@ -178,9 +207,7 @@ async function openReader(id){
     const notice=document.createElement('p');
     notice.className='reader-notice';
     notice.textContent='This full-text edition comes from Project Gutenberg. Original notices and license information are preserved. Copyright rules vary by country.';
-    const text=document.createElement('div');
-    text.className='reader-text';
-    text.textContent=content.replace(/\r\n?/g,'\n');
+    const text=renderBookText(content);
     doc.append(title,byline,notice,text);
     $('#readerSeek').disabled=false;
     $('#previousPage').disabled=false;

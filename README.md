@@ -32,7 +32,7 @@ Or open the static HTML with a web server to inspect the design; book loading re
 
 For real desktop and iPhone-sized browser testing, install Playwright once:
 
-    npm install --no-save playwright@1.56.1
+    npm install --no-save playwright@1.56.1 @axe-core/playwright
     npx playwright install chromium
     node tests/browser-check.cjs
     node tests/ai-browser-check.cjs
@@ -76,15 +76,8 @@ For reproducible network-error and race-condition testing, start a local test se
 
 The catalog is a snapshot, not a live complete inventory; some titles only support opening their Project Gutenberg edition. Saving progress is per browser/device, without an account.
 
-## Latest quality review
+### Long-book performance and accessibility
 
-See [the release QA report](docs/qa_release.md) for button-by-button testing, stress tests, responsive checks, accessibility results and known limitations.
+Long Gutenberg editions are divided into small, independently laid-out sections. Full text remains available, but offscreen sections don't require expensive reflow when the reader font size, spacing, or margins change. Run `node tests/long-book-performance.cjs` against a local development server to stress-test an approximately 3.35 MB synthetic book on desktop and mobile.
 
-To run the optional automated accessibility check:
-
-    npm install --no-save playwright@1.56.1 @axe-core/playwright
-    npx playwright install chromium
-    node tests/dev-server.cjs
-    BASE_URL=http://127.0.0.1:4173 node tests/accessibility-audit.cjs
-
-The accessibility suite audits homepage, browse, saved library, reader settings, and paper/sepia/night modes on both desktop and mobile. It does not require an external paid service.
+Run `node tests/accessibility-regression.cjs` to audit WCAG A/AA issues on desktop and mobile, including all reader themes and the settings panel. It uses `@axe-core/playwright`; automated checking does not replace manual accessibility review.
