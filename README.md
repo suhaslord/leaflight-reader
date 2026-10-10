@@ -30,6 +30,15 @@ Or open the static HTML with a web server to inspect the design; book loading re
     npm test
     npm run check
 
+For real desktop and iPhone-sized browser testing, install Playwright once:
+
+    npm install --no-save playwright@1.56.1
+    npx playwright install chromium
+    node tests/browser-check.cjs
+    node tests/ai-browser-check.cjs
+
+Both browser suites target https://leaflight-reader.vercel.app by default; override with BASE_URL.
+
 ## Browser QA
 Install Playwright locally for optional end-to-end checks against the deployed site:
 
