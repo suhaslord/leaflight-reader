@@ -5,7 +5,7 @@ const STORAGE = 'leaflight.v1.';
 const safeGet = (key, fallback) => { try { const v = JSON.parse(localStorage.getItem(STORAGE + key)); return v === null ? fallback : v; } catch { return fallback; } };
 const safeSet = (key, value) => { try { localStorage.setItem(STORAGE + key, JSON.stringify(value)); } catch {} };
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const state = { page:'home', topic:'', query:'', pageNo:1, next:false, books:[], request:0, pending:null, readerId:null, saved:safeGet('saved',{}), history:safeGet('history',{}), last:safeGet('last',null), settings:safeGet('settings',{size:19,font:'serif',theme:'paper'}) };
+const state = { page:'home', topic:'', query:'', pageNo:1, next:false, books:[], recommendations:[], request:0, pending:null, readerId:null, saved:safeGet('saved',{}), history:safeGet('history',{}), last:safeGet('last',null), settings:safeGet('settings',{size:19,font:'serif',theme:'paper'}) };
 const palette=[['#47655b','#243e36'],['#a16e61','#603f46'],['#7291a0','#354e62'],['#9b8b65','#5b533e'],['#777b9c','#42445d'],['#8c7c70','#58443a'],['#8e9b71','#536545']];
 let toastTimer, scrollTick=false, inputTimer;
 function authors(book){ return (book.authors||[]).map(a=>a.name).join(', ') || 'Unknown author'; }
@@ -13,17 +13,17 @@ function normalize(book){ return {id:Number(book.id),title:String(book.title||'U
 function unique(books){const seen=new Set();return books.filter(b=>b&&b.id&&!seen.has(b.id)&&seen.add(b.id));}
 function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),2600);}
 function updateSavedCount(){ $('#savedCount').textContent=Object.keys(state.saved).length; }
-function bookById(id){return state.books.find(b=>b.id===id)||state.saved[id]||state.history[id]?.book||state.last?.book||null;}
+function bookById(id){return state.books.find(b=>b.id===id)||state.recommendations.find(b=>b.id===id)||state.saved[id]||state.history[id]?.book||state.last?.book||null;}
 function isSaved(id){return !!state.saved[id];}
 function updateNav(){ $$('.nav-link,.mobile-link').forEach(el=>{const active=el.dataset.page===state.page;el.classList.toggle('active',active);el.setAttribute('aria-current',active?'page':'false');}); const labels={home:'Home',explore:'Discover',library:'My library'};$('#breadcrumb').innerHTML='Your space <span>/</span> '+labels[state.page]; }
-function setPage(page,opts={}){ state.page=page; updateNav();const home=page==='home'; $('#hero').hidden=!home;$('#viewAll').hidden=!home;$('#filters').hidden=page==='library';$('#continueBanner').hidden=!home||!state.last;
+function setPage(page,opts={}){ state.page=page; updateNav();const home=page==='home'; $('#hero').hidden=!home;$('#aiConcierge').hidden=page==='library';$('#viewAll').hidden=!home;$('#filters').hidden=page==='library';$('#continueBanner').hidden=!home||!state.last;
   if(page==='library'){$('#sectionEyebrow').innerHTML='<span class="tiny-star">✦</span> BOOKS YOU LOVE';$('#sectionTitle').innerHTML='Your little library <span class="title-swirl">↝</span>';$('#sectionSubtitle').textContent='Your saved stories, always one click away.';state.query='';$('#searchInput').value='';renderSaved();}
   else {$('#sectionEyebrow').innerHTML='<span class="tiny-star">✦</span> '+(home?'HANDPICKED FOR YOU':'EXPLORE THE COLLECTION');$('#sectionTitle').innerHTML=state.query?'Search results <span class="title-swirl">↝</span>':home?'The reading room <span class="title-swirl">↝</span>':'Find something wonderful <span class="title-swirl">↝</span>';$('#sectionSubtitle').textContent=state.query?('Books matching “'+state.query+'”'):(home?'Wonderful books that have stood the test of time.':'A world of stories, just waiting to be opened.');loadBooks(false);}
   if(!opts.noScroll) window.scrollTo({top:0,behavior:'smooth'});
 }
 function cover(book){const [a,b]=palette[book.id%palette.length],url=/^https:\/\/(www\.)?gutenberg\.org\//.test(book.image)?book.image:'',title=esc(book.title),author=esc(authors(book));return '<div class="book-cover" style="--cover-a:'+a+';--cover-b:'+b+'"><div class="fallback-cover"><span class="fallback-top">LEAFLIGHT EDITION</span><span class="fallback-title">'+title+'</span><span class="fallback-bottom">'+author+'</span></div>'+(url?'<img loading="lazy" alt="" src="'+esc(url)+'">':'')+'</div>';}
 function card(book){const progress=state.history[book.id]?.progress||0;return '<article class="book-card"><button class="book-cover-button" data-open="'+book.id+'" aria-label="Read '+esc(book.title)+'">'+cover(book)+'</button><button class="card-save '+(isSaved(book.id)?'saved':'')+'" data-save="'+book.id+'" title="'+(isSaved(book.id)?'Remove from library':'Save to library')+'" aria-label="'+(isSaved(book.id)?'Remove ':'Save ')+esc(book.title)+'" aria-pressed="'+isSaved(book.id)+'"><svg><use href="#ico-heart"/></svg></button><div class="book-meta"><h3>'+esc(book.title)+'</h3><p>'+esc(authors(book))+'</p>'+(progress>0?'<div class="book-progress" title="'+Math.round(progress*100)+'% read"><div style="width:'+Math.round(progress*100)+'%"></div></div>':'')+'</div></article>';}
-function attachImageFallbacks(){ $$('#booksGrid img').forEach(img=>img.addEventListener('error',()=>img.remove(),{once:true})); }
+function attachImageFallbacks(){ $$('#booksGrid img,#aiResults img').forEach(img=>img.addEventListener('error',()=>img.remove(),{once:true})); }
 function renderBooks(){ $('#booksGrid').innerHTML=state.books.map(card).join('');attachImageFallbacks();const none=state.books.length===0;$('#gridStatus').hidden=!none;if(none) $('#gridStatus').innerHTML='<h3>No books on this shelf yet</h3><p>Try a different search or explore another category.</p><button data-reset="true">Browse all books</button>';$('#loadMore').hidden=!state.next||none; }
 function renderSaved(){if(state.pending)state.pending.abort();state.books=Object.values(state.saved).reverse().map(normalize);state.next=false;renderBooks();if(state.books.length===0){$('#gridStatus').innerHTML='<h3>A story starts here.</h3><p>Tap the heart on any book to keep it in your library.</p><button data-reset="true">Explore books</button>';}}
 function showError(){ $('#booksGrid').innerHTML='';$('#loadMore').hidden=true;$('#gridStatus').hidden=false;$('#gridStatus').innerHTML='<h3>Our shelves are taking a moment.</h3><p>We could not reach the book catalog right now. Check your connection and try again.</p><button data-retry="true">Try again</button>';}
@@ -33,7 +33,7 @@ async function loadBooks(append=false){if(state.page==='library')return;if(state
   catch(e){if(e.name!=='AbortError'&&reqId===state.request)showError();}
   finally{if(reqId===state.request){state.pending=null;$('#loadMore').disabled=false;$('#loadMore').innerHTML='Show more books <span>↓</span>';}}
 }
-function toggleSave(id){const book=bookById(id);if(!book)return;if(isSaved(id)){delete state.saved[id];toast('Removed from your library');}else{state.saved[id]=normalize(book);toast('Added to your library');}safeSet('saved',state.saved);updateSavedCount();if(state.page==='library')renderSaved();else renderBooks();syncReaderSave();}
+function toggleSave(id){const book=bookById(id);if(!book)return;if(isSaved(id)){delete state.saved[id];toast('Removed from your library');}else{state.saved[id]=normalize(book);toast('Added to your library');}safeSet('saved',state.saved);updateSavedCount();if(state.page==='library')renderSaved();else renderBooks();renderAIResults();syncReaderSave();}
 function syncReaderSave(){if(state.readerId===null)return;const saved=isSaved(state.readerId);$('#readerSave').classList.toggle('is-saved',saved);$('#readerSave').setAttribute('aria-label',saved?'Remove from library':'Save to library');}
 function renderContinue(){const last=state.last;$('#continueBanner').hidden=!last||state.page!=='home';if(last){$('#continueTitle').textContent=last.book.title;$('#continueMeta').textContent=Math.round((state.history[last.book.id]?.progress||0)*100)+'% completed';}}
 function setTopic(topic){state.topic=topic;$$('.chip').forEach(btn=>{const active=btn.dataset.topic===topic;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',String(active));});state.query='';$('#searchInput').value='';setPage('explore',{noScroll:true});}
@@ -69,7 +69,9 @@ $('#viewAll').addEventListener('click',()=>setPage('explore'));
 $('#libraryShortcut').addEventListener('click',()=>setPage('library'));
 $('#loadMore').addEventListener('click',()=>loadBooks(true));
 $('#filters').addEventListener('click',e=>{const chip=e.target.closest('.chip');if(chip)setTopic(chip.dataset.topic);});
-$('#booksGrid').addEventListener('click',e=>{const save=e.target.closest('[data-save]');if(save){toggleSave(Number(save.dataset.save));return;}const open=e.target.closest('[data-open]');if(open)openReader(Number(open.dataset.open));});
+function onBookCardClick(e){const save=e.target.closest('[data-save]');if(save){toggleSave(Number(save.dataset.save));return;}const open=e.target.closest('[data-open]');if(open)openReader(Number(open.dataset.open));}
+$('#booksGrid').addEventListener('click',onBookCardClick);
+$('#aiResults').addEventListener('click',onBookCardClick);
 $('#gridStatus').addEventListener('click',e=>{if(e.target.closest('[data-retry]'))loadBooks();if(e.target.closest('[data-reset]')){state.topic='';setTopic('');}});
 $('#searchForm').addEventListener('submit',e=>{e.preventDefault();clearTimeout(inputTimer);state.query=$('#searchInput').value.trim();state.topic='';$$('.chip').forEach(btn=>{btn.classList.toggle('selected',!btn.dataset.topic);btn.setAttribute('aria-pressed',String(!btn.dataset.topic));});setPage('explore');});
 $('#searchInput').addEventListener('input',()=>{clearTimeout(inputTimer);inputTimer=setTimeout(()=>{const query=$('#searchInput').value.trim();if(query.length===0&&state.query.length===0)return;state.query=query;state.topic='';$$('.chip').forEach(btn=>btn.classList.toggle('selected',!btn.dataset.topic));setPage('explore',{noScroll:true});},550);});
@@ -86,4 +88,46 @@ $('#jumpBookmark').addEventListener('click',jumpBookmark);
 $('#readerScroll').addEventListener('scroll',()=>{if(scrollTick)return;scrollTick=true;requestAnimationFrame(()=>{scrollTick=false;updateProgress();});},{passive:true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#readerSettings').hidden)$('#readerSettings').hidden=true;else if(!$('#reader').hidden)closeReader();}});
 document.addEventListener('click',e=>{if(!$('#readerSettings').hidden&&!e.target.closest('#readerSettings,#toggleSettings'))$('#readerSettings').hidden=true;});
+
+let aiPicks=[],aiBusy=false;
+function renderAIResults(){
+  const parent=$('#aiResults');
+  parent.innerHTML=aiPicks.map(({book,reason})=>'<div class="ai-pick">'+card(book)+'<p class="ai-reason">'+esc(reason)+'</p></div>').join('');
+  attachImageFallbacks();
+}
+async function askBookGuide(prompt){
+  if(aiBusy)return;
+  const text=String(prompt||'').trim();
+  if(text.length<3){toast('Tell me a little about what you want to read.');$('#aiPrompt').focus();return;}
+  aiBusy=true;
+  $('#aiPrompt').value=text;
+  const button=$('#aiSubmit');
+  button.disabled=true;
+  button.querySelector('span').textContent='Finding your story…';
+  $('#aiResponse').hidden=false;
+  $('#aiResponseTitle').textContent='Finding your next favorite…';
+  $('#aiIntro').textContent='Looking through thousands of stories for you.';
+  $('#aiResults').innerHTML='<div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>';
+  try{
+    const response=await fetch('/api/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:text})});
+    if(!response.ok)throw Error('Could not find matches');
+    const data=await response.json();
+    if(!Array.isArray(data.picks)||!data.picks.length)throw Error('No matches yet');
+    aiPicks=data.picks.map(p=>({book:normalize(p.book),reason:String(p.reason||'A thoughtful match for your interests.')}));
+    state.recommendations=aiPicks.map(p=>p.book);
+    $('#aiResponseTitle').textContent='A little list, just for you.';
+    $('#aiIntro').textContent=data.intro||'Here are a few books that fit your mood.';
+    $('#aiResponseTag').textContent=data.mode==='ai'?'AI recommendations':'Smart book matching';
+    if(data.mode==='ai')$('#aiMode').textContent='✦ AI connected';
+    renderAIResults();
+  }catch{
+    aiPicks=[];state.recommendations=[];
+    $('#aiResponseTitle').textContent='Could not find your book yet';
+    $('#aiIntro').textContent='Something interrupted the search. Try again in a moment.';
+    $('#aiResults').innerHTML='';
+  }finally{aiBusy=false;button.disabled=false;button.querySelector('span').textContent='Find my book';}
+}
+$('#aiForm').addEventListener('submit',e=>{e.preventDefault();askBookGuide($('#aiPrompt').value);});
+$$('[data-ai-prompt]').forEach(el=>el.addEventListener('click',()=>askBookGuide(el.dataset.aiPrompt)));
+
 updateSavedCount();renderContinue();setPage('home',{noScroll:true});

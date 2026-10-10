@@ -31,3 +31,5 @@ module.exports = async function books(req,res){
   res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
   return res.status(200).json({count,next:page*limit<count,results:slice});
 };
+
+module.exports.displayAuthor=displayAuthor;

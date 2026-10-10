@@ -62,6 +62,24 @@
           <div class="hero-art" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="hero-book hero-book-back"><div class="hero-book-inner">THE<br>ART OF<br>WONDER</div></div><div class="hero-book hero-book-front"><div class="hero-book-mini">A COLLECTION OF CLASSICS</div><div class="hero-book-line"></div><div class="hero-book-title">Stories<br>worth<br>keeping.</div><span class="hero-book-flower">✿</span></div><div class="sparkle spark-one">✧</div><div class="sparkle spark-two">✦</div></div>
         </section>
 
+        <section class="ai-concierge" id="aiConcierge" aria-labelledby="aiTitle">
+          <div class="ai-header"><div class="ai-symbol" aria-hidden="true">✧</div><div class="ai-heading"><div class="eyebrow">YOUR PERSONAL BOOK GUIDE</div><h2 id="aiTitle">Not sure what to read? <em>Just ask.</em></h2><p>Tell me the mood, plot, or world you're looking for. I'll find a story for you.</p></div><span id="aiMode" class="ai-mode">Smart book matching</span></div>
+          <form id="aiForm" class="ai-form">
+            <label class="sr-only" for="aiPrompt">Describe your next read</label>
+            <textarea id="aiPrompt" maxlength="320" rows="2" required placeholder="I want a cozy mystery with clever characters and a little adventure..."></textarea>
+            <button id="aiSubmit" type="submit"><span>Find my book</span><span aria-hidden="true">✦</span></button>
+          </form>
+          <div class="ai-prompts" aria-label="Try a reading idea">
+            <button type="button" data-ai-prompt="a clever detective mystery full of suspense">A clever mystery</button>
+            <button type="button" data-ai-prompt="cozy heartwarming stories about friendship">Something comforting</button>
+            <button type="button" data-ai-prompt="mind bending science fiction and adventure">A different world</button>
+          </div>
+          <div class="ai-response" id="aiResponse" hidden aria-live="polite">
+            <div class="ai-response-heading"><div><div class="eyebrow">BOOKS FOR YOUR MOOD</div><h3 id="aiResponseTitle">A few picks for you</h3><p id="aiIntro"></p></div><span class="ai-response-tag" id="aiResponseTag">Book matching</span></div>
+            <div class="ai-results" id="aiResults"></div>
+          </div>
+        </section>
+
         <section class="reading-banner" id="continueBanner" hidden>
           <div class="banner-icon"><svg><use href="#ico-book"/></svg></div><div class="banner-details"><small>PICK UP WHERE YOU LEFT OFF</small><strong id="continueTitle"></strong><span id="continueMeta"></span></div>
           <button id="continueButton">Continue reading <svg><use href="#ico-arrow"/></svg></button>

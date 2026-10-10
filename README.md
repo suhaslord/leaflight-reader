@@ -14,6 +14,11 @@ A cozy, responsive web library for discovering and reading free classic books.
 ## Data and rights
 The searchable catalog is a snapshot of English-language public-domain book metadata from [Project Gutenberg](https://www.gutenberg.org/). The homepage ordering is seeded with popular Gutendex titles. Actual book text is fetched only when a reader opens a book from [Project Gutenberg](https://www.gutenberg.org/) and displayed with its included licensing notices. Search covers more than 20,000 catalog entries. Some editions have no plain-text version, and they may be opened at Gutenberg instead. Books are not uploaded to this repository. Most Project Gutenberg texts are freely reusable in the United States, but copyright status can differ internationally. Always check applicable laws.
 
+## Optional AI book guide
+The built-in book finder always works using local catalog ranking, even without an external key.
+To enable LLM-powered recommendations, use [Hugging Face Inference Providers](https://huggingface.co/docs/inference-providers/index): your Hugging Face account may include a small monthly amount of free usage. In the Vercel project settings, create a **server-side environment variable** named HF_TOKEN with an authorized Hugging Face token that has Inference Providers permissions, and redeploy. Optionally set HF_MODEL (default: Qwen/Qwen3-4B-Instruct-2507:cheapest).
+Tokens are **never accepted or stored in the web browser** and should not be committed to GitHub or included in client-side code. Hugging Face may change availability, pricing, and request limits; the app automatically falls back to local book matching when inference fails.
+
 ## Run locally
 Install Node 20+ and a local dev server supporting Vercel API routes, such as the Vercel CLI:
 

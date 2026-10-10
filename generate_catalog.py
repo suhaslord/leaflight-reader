@@ -44,8 +44,14 @@ for b in tops:
 others=[item for bid,item in base.items() if bid not in seen]
 others.sort(key=lambda x:x[0])
 allbooks=special+others
+
 (root/'data').mkdir(exist_ok=True)
-out=root/'data'/'catalog.json'
-out.write_text(json.dumps(allbooks,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
-print('Wrote',len(allbooks),'books',out.stat().st_size,'bytes',flush=True)
-print('First ten:',[(r[0],r[1][:22]) for r in allbooks[:10]],flush=True)
+import base64
+packed=json.dumps(allbooks,ensure_ascii=False,separators=(',',':')).encode('utf-8')
+encoded=base64.b64encode(gzip.compress(packed,compresslevel=9)).decode('ascii')
+(root/'data'/'catalog.cjs').write_text(
+    "const z=require('node:zlib');module.exports=JSON.parse(z.gunzipSync(Buffer.from('"
+    +encoded+"','base64')).toString('utf8'));\n", encoding='utf-8'
+)
+(root/'data'/'index.js').write_text("module.exports=require('./catalog.cjs');\n",encoding='utf-8')
+print('Wrote compressed catalog:',len(allbooks),'books',len(encoded),'base64 bytes',flush=True)
