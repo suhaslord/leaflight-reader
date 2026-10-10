@@ -45,19 +45,26 @@ async function check(base,wide){
     const node=el.querySelector('.reader-inbook-'+cl);
     styles[cl]=node?{count:el.querySelectorAll('.reader-inbook-'+cl).length,font:getComputedStyle(node).fontFamily,size:getComputedStyle(node).fontSize,text:node.textContent.trim().slice(0,65)}:null;
    }
-   return {styles,flow:el.querySelectorAll('.reader-paragraph-flow').length,
+   return {styles,prose:el.querySelectorAll('.reader-prose').length,verse:el.querySelectorAll('.reader-verse').length,
+    front:el.querySelector('.reader-edition-details')?.open,
+    frontText:el.querySelector('.reader-edition-details pre')?.textContent,
+    details:el.querySelectorAll('.reader-edition-details').length,
     bodyFont:getComputedStyle(el).fontFamily,scrollWidth:document.documentElement.scrollWidth,viewport:innerWidth};
   });
   console.log(wide?'desktop':'phone',JSON.stringify(result));
   assert.ok(result.styles.chapter?.count>=1,'Detect body chapter markers');
-  assert.ok(result.styles.toc?.count>=2,'Style contents entries more subtly');
+  assert.equal(result.front,false,'Front matter collapsed on open');
+  assert.equal(result.details,2,'Full source notices and footer preserved in disclosures');
+  assert.ok(result.frontText.includes('CONTENTS'),'Contents remain accessible');
   assert.ok(result.styles.part?.count>=1);
   assert.ok(result.styles.subtitle?.count>=1);
   assert.ok(result.styles.scene?.count>=1);
-  assert.ok(result.styles.section?.count>=2);
-  assert.ok(result.flow>=1,'Reflow hard-wrapped prose');
-  assert.equal(await page.locator('.reader-paragraph-flow').first().evaluate(el=>getComputedStyle(el).whiteSpace),'normal');
+  assert.ok(result.styles.section?.count>=1);
+  assert.ok(result.prose>=2,'Reflow hard-wrapped prose into book paragraphs');
+  assert.ok(result.verse>=1,'Keep short verse line breaks');
+  assert.equal(await page.locator('.reader-prose').first().evaluate(el=>getComputedStyle(el).whiteSpace),'normal');
   assert.notEqual(result.styles.chapter.font,result.bodyFont,'Chapter title must visually differ from body font');
+  assert.ok(result.bodyFont.includes('Literata'),'Body uses the dedicated reader face');
   assert.ok(result.scrollWidth<=result.viewport+3);
   await page.locator('#toggleSettings').click();
   await page.locator('[data-font=sans]').click();await page.locator('[data-theme=night]').click();

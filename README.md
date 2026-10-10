@@ -95,3 +95,23 @@ preserved in the reader's DOM, aside from normalizing CRLF newlines.
 Run `node tests/reader-typography.cjs` against the local development server
 to verify the heading hierarchy, mobile styling, text preservation and
 bookmark interactions.
+
+### Editorial reading mode
+
+The book view opens at the story instead of the Project Gutenberg license
+preamble. Title pages, publisher notes, prefaces and tables of contents remain
+available in a disclosure at the start; the full ending/license remains
+available in another disclosure at the end. Every character of the fetched
+plain-text edition remains in the reading document, even while disclosures
+are closed. The publisher's original website remains linked in the toolbar.
+
+The main text uses Literata for long-form prose, Fraunces for title/chapter
+headings, and DM Sans for short reader labels. Prose that Gutenberg hard-wraps
+at terminal width reflows into paragraphs; short verse keeps line breaks.
+A serif/sans toggle, night/sepia themes, bookmarks, position slider and
+reading-width controls remain available. Headings are recognized conservatively,
+so layout can vary for unusual or poorly scanned public-domain editions.
+
+Run `node tests/reader-typography.cjs` locally to verify the reading styles,
+full-text fidelity, source disclosures and mobile behavior. For broader QA, compare real Gutenberg editions with locally downloaded
+fixtures to confirm source text and paragraph rendering stay faithful.
