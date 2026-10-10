@@ -5,19 +5,5 @@ module.exports = [
   ...require('./catalog-03.json'),
   ...require('./catalog-04.json'),
   ...require('./catalog-05.json'),
-  ...require('./catalog-06.json'),
-  ...require('./catalog-07.json'),
-  ...require('./catalog-08.json'),
-  ...require('./catalog-09.json'),
-  ...require('./catalog-10.json'),
-  ...require('./catalog-11.json'),
-  ...require('./catalog-12.json'),
-  ...require('./catalog-13.json'),
-  ...require('./catalog-14.json'),
-  ...require('./catalog-15.json'),
-  ...require('./catalog-16.json'),
-  ...require('./catalog-17.json'),
-  ...require('./catalog-18.json'),
-  ...require('./catalog-19.json'),
-  ...require('./catalog-20.json')
+  ...require('./catalog-06.json')
 ];
