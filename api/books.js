@@ -25,5 +25,5 @@ module.exports = async function books(req,res){
     }));
     res.setHeader('Cache-Control','public, s-maxage=600, stale-while-revalidate=1800');
     return res.status(200).json({count:data.count||items.length,next:!!data.next,results:items});
-  }catch(e){return res.status(502).json({error:'Book catalog temporarily unavailable'});}
+  }catch(e){console.error('catalog upstream failure:',String(e),e?.cause?.code);return res.status(502).json({error:'Book catalog temporarily unavailable'});}
 };

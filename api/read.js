@@ -8,7 +8,7 @@ module.exports = async function read(req,res){
   if(!/^[1-9]\d{0,6}$/.test(id))return res.status(400).send('Invalid book ID');
   try{
     const catalog=await fetch('https://gutendex.com/books/'+id,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(10000)});
-    if(!catalog.ok)return res.status(404).send('Book not found');
+    if(!catalog.ok){console.error('read catalog returned:',catalog.status);return res.status(502).send('Book catalog unavailable');}
     const book=await catalog.json();
     if(book.copyright===true)return res.status(403).send('This edition is not available in the reader');
     const formats=Object.entries(book.formats||{});
@@ -25,6 +25,6 @@ module.exports = async function read(req,res){
     res.setHeader('Content-Type','text/plain; charset=utf-8');
     res.setHeader('Cache-Control','public, s-maxage=86400, stale-while-revalidate=604800');
     return res.status(200).send(text);
-  }catch(e){return res.status(502).send('Book could not be loaded; try the original Project Gutenberg edition');}
+  }catch(e){console.error('read upstream failure:',String(e),e?.cause?.code);return res.status(502).send('Book could not be loaded; try the original Project Gutenberg edition');}
 };
 module.exports.approvedTextUrl=approvedTextUrl;
