@@ -1,0 +1,12 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const books=require('../api/books');
+const read=require('../api/read');
+function res(){return {code:200,headers:{},body:null,status(n){this.code=n;return this},setHeader(k,v){this.headers[k]=v;return this},json(v){this.body=v;return this},send(v){this.body=v;return this}};}
+test('invalid IDs are rejected before network access',async()=>{const r=res();await read({method:'GET',query:{id:'https://evil.com'}},r);assert.equal(r.code,400);});
+test('unsafe URLs and local network URLs are rejected',()=>{assert.equal(read.approvedTextUrl('http://www.gutenberg.org/cache/epub/1/a.txt'),false);assert.equal(read.approvedTextUrl('https://evil.com/p.txt'),false);assert.equal(read.approvedTextUrl('https://127.0.0.1/test.txt'),false);assert.equal(read.approvedTextUrl('https://www.gutenberg.org/cache/epub/84/pg84.txt'),true);});
+test('books validates lists',async()=>{const r=res();await books({method:'GET',query:{ids:'1,abc'}},r);assert.equal(r.code,400);});
+test('books normalizes catalog data',async()=>{const old=global.fetch;global.fetch=async()=>({ok:true,json:async()=>({count:2,next:null,results:[{id:1,title:'A',copyright:false,authors:[{name:'Author'}],formats:{'image/jpeg':'https://www.gutenberg.org/cover.jpg'},download_count:4},{id:2,title:'B',copyright:true,formats:{}}]})});try{const r=res();await books({method:'GET',query:{}},r);assert.equal(r.code,200);assert.equal(r.body.results.length,1);assert.equal(r.body.results[0].image,'https://www.gutenberg.org/cover.jpg');}finally{global.fetch=old;}});
+test('read preserves complete original content',async()=>{const old=global.fetch;global.fetch=async url=>String(url).includes('gutendex')?({ok:true,json:async()=>({copyright:false,formats:{'text/plain; charset=utf-8':'https://www.gutenberg.org/cache/epub/84/pg84.txt'}})}):({ok:true,headers:{get:()=>null},text:async()=>'Full original text with license'});try{const r=res();await read({method:'GET',query:{id:'84'}},r);assert.equal(r.code,200);assert.equal(r.body,'Full original text with license');}finally{global.fetch=old;}});
+test('empty or missing plain-text formats fall back without breaking',async()=>{const old=global.fetch;global.fetch=async()=>({ok:true,json:async()=>({copyright:false,formats:{'text/html':'https://www.gutenberg.org/ebooks/8.html'}})});try{const r=res();await read({method:'GET',query:{id:'8'}},r);assert.equal(r.code,415);}finally{global.fetch=old;}});

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f8f7f3">
+  <meta name="description" content="Leaflight is a beautiful, free library of classic books you can read right in your browser.">
+  <title>Leaflight — a little more room to read</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script defer src="/assets/app.js"></script>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+    <symbol id="ico-book" viewBox="0 0 24 24"><path d="M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zm0 0v14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3V10zm6 10v-7h6v7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="14" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="14" width="7" height="7" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+    <symbol id="ico-heart" viewBox="0 0 24 24"><path d="M20.5 8.5c0 4.3-8.5 10-8.5 10s-8.5-5.7-8.5-10c0-5.7 7-7.4 8.5-2.6 1.5-4.8 8.5-3.1 8.5 2.6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-7-7 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="ico-close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M9 3v8m6 2v8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="ico-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  </svg>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#" id="brandLink" aria-label="Leaflight home">
+        <span class="brand-mark">✳</span><span class="brand-word">leaflight<span class="brand-dot">.</span></span>
+      </a>
+      <p class="side-label">YOUR READING SPACE</p>
+      <nav class="side-nav" aria-label="Library pages">
+        <button class="nav-link active" data-page="home"><svg><use href="#ico-home"/></svg><span>Home</span></button>
+        <button class="nav-link" data-page="explore"><svg><use href="#ico-grid"/></svg><span>Discover</span></button>
+        <button class="nav-link" data-page="library"><svg><use href="#ico-heart"/></svg><span>My library</span><span id="savedCount" class="count-pill">0</span></button>
+      </nav>
+      <div class="side-bottom">
+        <div class="side-note"><span class="note-decoration">“</span><p>A reader lives a thousand lives before he dies.</p><small>— George R. R. Martin</small></div>
+        <div class="side-footer">A slower corner of the internet. <span>Made for curious minds.</span></div>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <header class="topbar">
+        <div class="mobile-brand"><span class="brand-mark">✳</span><strong>leaflight.</strong></div>
+        <div class="breadcrumb" id="breadcrumb">Your space <span>/</span> Home</div>
+        <form class="search-box" id="searchForm" role="search">
+          <svg><use href="#ico-search"/></svg>
+          <input id="searchInput" aria-label="Search books or authors" type="search" placeholder="Search books, authors..." autocomplete="off" maxlength="120">
+          <kbd class="search-hint">↵</kbd>
+        </form>
+        <button class="avatar" id="libraryShortcut" title="Open your library" aria-label="Open your saved books">✳</button>
+      </header>
+
+      <div class="content">
+        <section class="hero" id="hero">
+          <div class="hero-copy"><div class="eyebrow"><span class="tiny-star">✦</span> WELCOME TO YOUR NEXT CHAPTER</div>
+            <h1>Between the pages,<br><em>find yourself.</em></h1>
+            <p>Thousands of timeless stories. No subscriptions, no noise. Just you and a really good book.</p>
+            <button class="hero-button" id="heroExplore">Find your next read <svg><use href="#ico-arrow"/></svg></button>
+          </div>
+          <div class="hero-art" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="hero-book hero-book-back"><div class="hero-book-inner">THE<br>ART OF<br>WONDER</div></div><div class="hero-book hero-book-front"><div class="hero-book-mini">A COLLECTION OF CLASSICS</div><div class="hero-book-line"></div><div class="hero-book-title">Stories<br>worth<br>keeping.</div><span class="hero-book-flower">✿</span></div><div class="sparkle spark-one">✧</div><div class="sparkle spark-two">✦</div></div>
+        </section>
+
+        <section class="reading-banner" id="continueBanner" hidden>
+          <div class="banner-icon"><svg><use href="#ico-book"/></svg></div><div class="banner-details"><small>PICK UP WHERE YOU LEFT OFF</small><strong id="continueTitle"></strong><span id="continueMeta"></span></div>
+          <button id="continueButton">Continue reading <svg><use href="#ico-arrow"/></svg></button>
+        </section>
+
+        <section class="shelf" id="bookSection">
+          <div class="section-top">
+            <div><div class="eyebrow section-eyebrow" id="sectionEyebrow"><span class="tiny-star">✦</span> HANDPICKED FOR YOU</div><h2 id="sectionTitle">The reading room <span class="title-swirl">↝</span></h2><p class="section-sub" id="sectionSubtitle">Wonderful books that have stood the test of time.</p></div>
+            <button class="text-link" id="viewAll">Explore all <svg><use href="#ico-arrow"/></svg></button>
+          </div>
+          <div class="filters" id="filters" role="group" aria-label="Genres">
+            <button class="chip selected" data-topic="" aria-pressed="true">All stories</button>
+            <button class="chip" data-topic="Fiction" aria-pressed="false">Fiction</button>
+            <button class="chip" data-topic="Adventure" aria-pressed="false">Adventure</button>
+            <button class="chip" data-topic="Mystery" aria-pressed="false">Mystery</button>
+            <button class="chip" data-topic="Science fiction" aria-pressed="false">Sci-fi</button>
+            <button class="chip" data-topic="Romance" aria-pressed="false">Romance</button>
+            <button class="chip" data-topic="Poetry" aria-pressed="false">Poetry</button>
+            <button class="chip" data-topic="History" aria-pressed="false">History</button>
+          </div>
+          <div class="books-grid" id="booksGrid" aria-live="polite"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+          <div class="grid-status" id="gridStatus" hidden></div>
+          <button class="load-more" id="loadMore" hidden>Show more books <span>↓</span></button>
+        </section>
+        <footer class="site-footer"><span>✳ leaflight. — made for the love of reading</span><span>Catalog from <a href="https://gutendex.com" target="_blank" rel="noopener noreferrer">Gutendex</a> • Texts from <a href="https://www.gutenberg.org" target="_blank" rel="noopener noreferrer">Project Gutenberg</a></span></footer>
+      </div>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button class="mobile-link active" data-page="home"><svg><use href="#ico-home"/></svg><span>Home</span></button>
+    <button class="mobile-link" data-page="explore"><svg><use href="#ico-grid"/></svg><span>Discover</span></button>
+    <button class="mobile-link" data-page="library"><svg><use href="#ico-heart"/></svg><span>Saved</span></button>
+  </nav>
+
+  <div class="reader" id="reader" hidden role="dialog" aria-modal="true" aria-labelledby="readerTitle">
+    <header class="reader-toolbar">
+      <button class="reader-back" id="closeReader" aria-label="Close reader"><span>←</span><span class="back-label">Library</span></button>
+      <div class="reader-heading"><strong id="readerTitle">Your book</strong><span id="readerAuthor">Author</span></div>
+      <div class="reader-actions">
+        <button class="icon-button" id="readerSave" aria-label="Save book" title="Save book"><svg><use href="#ico-heart"/></svg></button>
+        <button class="icon-button" id="toggleSettings" aria-label="Reading settings" title="Reading settings"><svg><use href="#ico-settings"/></svg></button>
+      </div>
+    </header>
+    <div class="reader-settings" id="readerSettings" hidden>
+      <div><label for="fontSize">Text size</label><div class="stepper"><button id="fontSmaller" aria-label="Decrease font size">A−</button><output id="fontSize" aria-live="polite">19</output><button id="fontLarger" aria-label="Increase font size">A+</button></div></div>
+      <div><span class="settings-label">Typeface</span><div class="segmented"><button data-font="serif" class="active">Serif</button><button data-font="sans">Sans</button></div></div>
+      <div><span class="settings-label">Page color</span><div class="segmented"><button data-theme="paper" class="active">Paper</button><button data-theme="sepia">Sepia</button><button data-theme="night">Night</button></div></div>
+    </div>
+    <div id="readerScroll" class="reader-scroll">
+      <div class="reader-document" id="readerDocument"><div class="reading-loading"><div class="loading-circle"></div><p>Opening your book…</p></div></div>
+    </div>
+    <footer class="reader-bottom"><div class="reader-progress-track"><div id="readerProgressBar"></div></div><span id="readerProgress">0% read</span><button id="bookmarkPosition">Bookmark this spot</button><a id="sourceLink" href="https://www.gutenberg.org" target="_blank" rel="noopener noreferrer">View original ↗</a></footer>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
