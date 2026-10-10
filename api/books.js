@@ -10,6 +10,7 @@ module.exports = async function books(req,res){
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
   const page=Math.max(1,Math.min(2000,Number.parseInt(req.query.page,10)||1));
   const search=String(req.query.search||'').trim().slice(0,120).toLowerCase();
+  const words=search.split(/\s+/).filter(Boolean);
   const topic=String(req.query.topic||'').trim().slice(0,60);
   const ids=String(req.query.ids||'').trim();
   if(ids&&!/^\d{1,7}(,\d{1,7}){0,19}$/.test(ids))return res.status(400).json({error:'Invalid book IDs'});
@@ -19,7 +20,7 @@ module.exports = async function books(req,res){
   for(const row of catalog){
     if(requested&&!requested.has(row[0]))continue;
     if(topicFlag&&!(row[4]&topicFlag))continue;
-    if(search&&!(row[1].toLowerCase().includes(search)||row[2].toLowerCase().includes(search)||row[3].toLowerCase().includes(search)))continue;
+    if(words.length){const haystack=(row[1]+' '+row[2]+' '+row[3]).toLowerCase();if(!words.every(word=>haystack.includes(word)))continue;}
     results.push(row);
   }
   const count=results.length;

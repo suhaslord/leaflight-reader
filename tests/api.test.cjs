@@ -14,3 +14,5 @@ test('title search finds Frankensteins ID',async()=>{const r=res();await books({
 test('genre filters apply to records',async()=>{const r=res();await books({method:'GET',query:{topic:'Mystery'}},r);assert.equal(r.code,200);assert.ok(r.body.count>1);});
 test('book reading preserves full Gutenberg text',async()=>{const old=global.fetch;global.fetch=async()=>({ok:true,status:200,headers:{get:()=> 'text/plain'},text:async()=>'Full Project Gutenberg work with license'});try{const r=res();await read({method:'GET',query:{id:'84'}},r);assert.equal(r.code,200);assert.equal(r.body,'Full Project Gutenberg work with license');}finally{global.fetch=old;}});
 test('reader handles missing text edition with fallback',async()=>{const old=global.fetch;global.fetch=async()=>({ok:false,status:404});try{const r=res();await read({method:'GET',query:{id:'8'}},r);assert.equal(r.code,415);}finally{global.fetch=old;}});
+
+test('search finds books using noncontiguous title words',async()=>{const r=res();await books({method:'GET',query:{search:'alice wonderland'}},r);assert.equal(r.code,200);assert.ok(r.body.results.some(book=>book.id===11));});
