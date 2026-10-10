@@ -49,9 +49,15 @@ allbooks=special+others
 import base64
 packed=json.dumps(allbooks,ensure_ascii=False,separators=(',',':')).encode('utf-8')
 encoded=base64.b64encode(gzip.compress(packed,compresslevel=9)).decode('ascii')
+
+chunks=[]
+for i in range(0,len(encoded),270000):
+    name='catalog-chunk-'+str(len(chunks))+'.cjs'
+    (root/'data'/name).write_text("module.exports='"+encoded[i:i+270000]+"';\n",encoding='utf-8')
+    chunks.append(name)
 (root/'data'/'catalog.cjs').write_text(
-    "const z=require('node:zlib');module.exports=JSON.parse(z.gunzipSync(Buffer.from('"
-    +encoded+"','base64')).toString('utf8'));\n", encoding='utf-8'
-)
+    "const z=require('node:zlib');module.exports=JSON.parse(z.gunzipSync(Buffer.from(["+
+    ','.join("require('./"+name+"')" for name in chunks)+
+    "].join(''),'base64')).toString('utf8'));\n",encoding='utf-8')
 (root/'data'/'index.js').write_text("module.exports=require('./catalog.cjs');\n",encoding='utf-8')
-print('Wrote compressed catalog:',len(allbooks),'books',len(encoded),'base64 bytes',flush=True)
+print('Wrote compressed catalog:',len(allbooks),'books across',len(chunks),'chunks',flush=True)
