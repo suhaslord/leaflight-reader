@@ -202,13 +202,121 @@ function appendReaderProse(parent,text){
     parent.append(el);
   }
 }
+
+// Gutenberg represents engravings as literal [Illustration: ...] text.
+// Parse nested brackets so embedded copyright notes remain intact.
+function collectIllustrationMarkers(text){
+  const found=[];
+  const re=/\[Illustration\b/gi;
+  let match;
+  while((match=re.exec(text))){
+    const start=match.index;
+    let depth=0,end=-1;
+    for(let i=start;i<Math.min(text.length,start+5500);i++){
+      if(text[i]==='[')depth++;
+      else if(text[i]===']'){
+        depth--;
+        if(depth===0){end=i+1;break;}
+      }
+    }
+    if(end<0)continue;
+    found.push({start,end,raw:text.slice(start,end),index:found.length});
+    re.lastIndex=end;
+  }
+  return found;
+}
+function cleanIllustrationCaption(raw){
+  let content=raw.replace(/^\[Illustration\s*:?\s*/i,'').replace(/\]\s*$/,'');
+  content=content.replace(/\[\s*_?Copyright[\s\S]*?(?:\]\s*)?$/i,'');
+  content=content.replace(/Copyright\s+\d{4}\s+by\s+[^.]+\./ig,'');
+  content=content.replace(/[_*]/g,'').replace(/\^\{([^}]*)\}/g,'$1');
+  content=content.replace(/\s+/g,' ').replace(/^[\s·"'“”]+|[\s·"'“”]+$/g,'').trim();
+  if(/^(?:chapter|the end|pride and prejudice)\b/i.test(content) && content.length<80)return '';
+  if(content.length>150)content=content.slice(0,147).trimEnd()+'…';
+  return content;
+}
+function appendIllustration(parent,marker,manifest,bookId){
+  const entry=manifest?.[marker.index];
+  const creditMatch=marker.raw.match(/Copyright\s+(\d{4})\s+by\s+([^.\]\n]+)/i);
+  const credit=Number(bookId)===1342 ? (creditMatch?'Hugh Thomson · © '+creditMatch[1]+' '+creditMatch[2].trim():'Illustrated by Hugh Thomson · 1894 edition') : (creditMatch?'Original illustration: '+creditMatch[2].trim()+', '+creditMatch[1]:'');
+  const caption=cleanIllustrationCaption(marker.raw);
+  // Preserve the complete original marker even while hiding raw markup.
+  const original=document.createElement('span');
+  original.className='reader-illustration-source';
+  original.setAttribute('aria-hidden','true');
+  original.textContent=marker.raw;
+  if(entry?.kind==='ornament'){
+    parent.append(original);
+    return;
+  }
+  const fig=document.createElement('figure');
+  fig.className='reader-illustration';
+  const label=caption||entry?.alt||'Original book illustration';
+  fig.setAttribute('aria-label',label);
+  if(entry?.url && /^https:\/\/www\.gutenberg\.org\/cache\/epub\/\d+\/images\/[A-Za-z0-9_.-]+$/.test(entry.url)){
+    const img=document.createElement('img');
+    img.src=entry.url;
+    img.alt=label;
+    img.loading='lazy';
+    img.decoding='async';
+    img.referrerPolicy='no-referrer';
+    img.width=Math.min(Math.max(Number(entry.width)||450,120),850);
+    if(Number(entry.height)>0)img.height=Number(entry.height);
+    img.addEventListener('error',()=>{
+      img.remove();
+      fig.classList.add('reader-illustration-unavailable');
+      const link=document.createElement('a');
+      link.href='https://www.gutenberg.org/ebooks/'+bookId;
+      link.target='_blank';
+      link.rel='noopener noreferrer';
+      link.textContent='Open the original illustration ↗';
+      cap.append(link);
+    },{once:true});
+    fig.append(img);
+  }else fig.classList.add('reader-illustration-unavailable');
+  const cap=document.createElement('figcaption');
+  if(caption){
+    const text=document.createElement('span');
+    text.textContent=caption;
+    cap.append(text);
+  }
+  if(credit){
+    const note=document.createElement('small');
+    note.className='reader-illustration-credit';
+    note.textContent=credit;
+    cap.append(note);
+  }
+  if(!entry?.url){
+    const a=document.createElement('a');
+    a.href='https://www.gutenberg.org/ebooks/'+bookId;
+    a.target='_blank';
+    a.rel='noopener noreferrer';
+    a.textContent='See illustrated edition ↗';
+    cap.append(a);
+  }
+  if(cap.childNodes.length)fig.append(cap);
+  fig.append(original);
+  parent.append(fig);
+}
 function appendStyledBlock(fragment, source, context, offset){
+  const figures=context.markers.filter(m=>m.start>=offset&&m.end<=offset+source.length);
+  let figureIndex=0;
   const block=document.createElement('div');
   block.className='reader-text-block';
   let cursor=0,last=0;
   while(cursor<source.length){
     const newline=source.indexOf('\n',cursor);
     const end=newline===-1?source.length:newline+1;
+    const nextFigure=figures[figureIndex];
+    if(nextFigure && nextFigure.start-offset>=cursor && nextFigure.start-offset<end){
+      const at=nextFigure.start-offset;
+      if(at>last)appendReaderProse(block,source.slice(last,at));
+      appendIllustration(block,nextFigure,context.artwork,context.bookId);
+      cursor=nextFigure.end-offset;
+      last=cursor;
+      figureIndex++;
+      continue;
+    }
     const line=source.slice(cursor,newline===-1?end:newline);
     context.position=offset+cursor;
     const kind=sectionKind(line,context);
@@ -294,13 +402,15 @@ function appendEditionDetails(parent,source,label){
 }
 // Preserve complete source text, rendering only actual story text up front.
 // Small, contained text blocks maintain responsiveness in long novels.
-function renderBookText(content){
+function renderBookText(content,bookId,artworkData){
   const wrapper=document.createElement('div');
   wrapper.className='reader-text';
   const text=content.replace(/\r\n?/g,'\n');
   const {mainStart,bodyEnd}=findMainTextRange(text);
+  const markers=collectIllustrationMarkers(text);
+  const artwork=artworkData?.images?.length===markers.length?artworkData.images:null;
   appendEditionDetails(wrapper,text.slice(0,mainStart),'Title pages, contents & publisher notes');
-  const context={inContents:false,pendingTitle:false,tocStart:-1,tocEnd:-1,position:0};
+  const context={inContents:false,pendingTitle:false,tocStart:-1,tocEnd:-1,position:0,markers,artwork,bookId};
   const fragment=document.createDocumentFragment();
   let start=mainStart;
   const target=11000,min=6500,max=16000;
@@ -318,6 +428,13 @@ function renderBookText(content){
           const line=text.lastIndexOf('\n',end);
           if(line>=start+min)end=line+1;
         }
+      }
+    }
+    // Never split a balanced illustration placeholder across text blocks.
+    for(const marker of markers){
+      if(marker.start<end&&marker.end>end&&marker.start>=start){
+        end=marker.end;
+        break;
       }
     }
     appendStyledBlock(fragment,text.slice(start,end),context,start);
@@ -378,11 +495,17 @@ async function openReader(id){
   readSettings();
   $('#closeReader').focus();
   try{
+    const artworkPromise=Number(id)===1342
+      ? fetch('/data/illustrations/1342.json',{signal:readerRequest.signal})
+          .then(r=>r.ok?r.json():null).catch(()=>null)
+      : Promise.resolve(null);
     const response=await fetch('/api/read?id='+encodeURIComponent(id),{signal:readerRequest.signal});
     if(!response.ok)throw Error('Reader unavailable');
     const content=await response.text();
     if(session!==readerSession||state.readerId!==id)return;
     if(!content.trim())throw Error('Empty book');
+    const artworkData=await artworkPromise;
+    if(session!==readerSession||state.readerId!==id)return;
     const doc=$('#readerDocument');
     doc.replaceChildren();
     const title=document.createElement('h1');
@@ -390,7 +513,7 @@ async function openReader(id){
     const byline=document.createElement('p');
     byline.className='book-byline';
     byline.textContent='by '+authors(book);
-    const text=renderBookText(content);
+    const text=renderBookText(content,id,artworkData);
     doc.append(title,byline,text);
     $('#readerSeek').disabled=false;
     $('#previousPage').disabled=false;

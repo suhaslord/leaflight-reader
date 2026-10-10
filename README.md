@@ -115,3 +115,22 @@ so layout can vary for unusual or poorly scanned public-domain editions.
 Run `node tests/reader-typography.cjs` locally to verify the reading styles,
 full-text fidelity, source disclosures and mobile behavior. For broader QA, compare real Gutenberg editions with locally downloaded
 fixtures to confirm source text and paragraph rendering stay faithful.
+
+## Illustrated Gutenberg editions
+
+Some Gutenberg text editions include literal illustration placeholders and
+old printed copyright notes. Leaflight recognizes balanced illustration markers,
+including nested credits, and replaces raw markers with reader figures. The
+original edition and licensing material remain accessible. When an image cannot
+be matched confidently, the reader links to Project Gutenberg rather than
+inventing an image.
+
+The 1894 illustrated Pride and Prejudice edition (eBook 1342) has a verified
+162-item image map based on Gutenberg's official illustrated HTML. Original art
+by Hugh Thomson appears with clean George Allen 1894 credits. Decorative
+drop-caps are omitted from the reading flow. Images load lazily directly from
+Project Gutenberg with measured dimensions. Other books retain text-first
+reading with a link for any unverified illustration placeholder.
+
+Run npm test for manifest checks and tests/illustration-audit.cjs for desktop
+and mobile browser testing with Playwright and Gutenberg network access.
