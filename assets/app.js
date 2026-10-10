@@ -38,17 +38,30 @@ function syncReaderSave(){if(state.readerId===null)return;const saved=isSaved(st
 function renderContinue(){const last=state.last;$('#continueBanner').hidden=!last||state.page!=='home';if(last){$('#continueTitle').textContent=last.book.title;$('#continueMeta').textContent=Math.round((state.history[last.book.id]?.progress||0)*100)+'% completed';}}
 function setTopic(topic){state.topic=topic;$$('.chip').forEach(btn=>{const active=btn.dataset.topic===topic;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',String(active));});state.query='';$('#searchInput').value='';setPage('explore',{noScroll:true});}
 function readSettings(){const s=state.settings;const size=Math.max(15,Math.min(28,Number(s.size)||19));s.size=size;s.font=['serif','sans'].includes(s.font)?s.font:'serif';s.theme=['paper','sepia','night'].includes(s.theme)?s.theme:'paper';const reader=$('#reader');reader.dataset.font=s.font;reader.dataset.theme=s.theme;$('#readerDocument').style.fontSize=size+'px';$('#fontSize').textContent=size+'px';$$('[data-font]').forEach(el=>el.classList.toggle('active',el.dataset.font===s.font));$$('[data-theme]').forEach(el=>el.classList.toggle('active',el.dataset.theme===s.theme));safeSet('settings',s);}
+function updateBookmarkAction(){
+  if(state.readerId===null){$('#jumpBookmark').hidden=true;return;}
+  const saved=safeGet('bookmark.'+state.readerId,null);
+  $('#jumpBookmark').hidden=typeof saved!=='number'||!Number.isFinite(saved);
+}
+function jumpBookmark(){
+  if(state.readerId===null)return;
+  const position=safeGet('bookmark.'+state.readerId,null);
+  if(typeof position!=='number'||!Number.isFinite(position))return;
+  const el=$('#readerScroll');
+  el.scrollTop=Math.max(0,Math.min(1,position))*Math.max(0,el.scrollHeight-el.clientHeight);
+  updateProgress();toast('Back to your bookmark');
+}
 function setReaderError(id){const doc=$('#readerDocument');doc.replaceChildren();const div=document.createElement('div');div.className='reading-error';const h=document.createElement('h2');h.textContent='This edition could not be opened right now.';const p=document.createElement('p');p.textContent='Some older books have formats that are unavailable in the built-in reader. You can still read the original edition at Project Gutenberg.';const a=document.createElement('a');a.href='https://www.gutenberg.org/ebooks/'+id;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open the original book ↗';div.append(h,p,a);doc.append(div);}
 async function openReader(id){const book=bookById(id);if(!book){toast('This book is unavailable. Try searching for it again.');return;}
   state.readerId=id;state.last={book:normalize(book),opened:Date.now()};safeSet('last',state.last);if(!state.history[id])state.history[id]={book:normalize(book),progress:0};safeSet('history',state.history);renderContinue();
-  $('#readerTitle').textContent=book.title;$('#readerAuthor').textContent=authors(book);$('#sourceLink').href='https://www.gutenberg.org/ebooks/'+id;$('#reader').hidden=false;document.body.style.overflow='hidden';$('#readerSettings').hidden=true;$('#readerDocument').innerHTML='<div class="reading-loading"><div class="loading-circle"></div><p>Opening your book…</p></div>';$('#readerScroll').scrollTop=0;$('#readerProgress').textContent='0% read';$('#readerProgressBar').style.width='0%';syncReaderSave();readSettings();$('#closeReader').focus();
+  $('#readerTitle').textContent=book.title;$('#readerAuthor').textContent=authors(book);$('#sourceLink').href='https://www.gutenberg.org/ebooks/'+id;$('#reader').hidden=false;document.body.style.overflow='hidden';$('#readerSettings').hidden=true;$('#readerDocument').innerHTML='<div class="reading-loading"><div class="loading-circle"></div><p>Opening your book…</p></div>';$('#readerScroll').scrollTop=0;$('#readerProgress').textContent='0% read';$('#readerProgressBar').style.width='0%';syncReaderSave();updateBookmarkAction();readSettings();$('#closeReader').focus();
   const thisBook=id;
   try{const response=await fetch('/api/read?id='+encodeURIComponent(id));if(!response.ok)throw Error('Reader unavailable');const content=await response.text();if(state.readerId!==thisBook)return;if(!content.trim())throw Error('Empty book');const doc=$('#readerDocument');doc.replaceChildren();const title=document.createElement('h1');title.textContent=book.title;const byline=document.createElement('p');byline.className='book-byline';byline.textContent='by '+authors(book);const notice=document.createElement('p');notice.className='reader-notice';notice.textContent='You are reading the text edition from Project Gutenberg. Text and its licensing notices are preserved. Copyright status may vary by country.';const text=document.createElement('div');text.className='reader-text';text.textContent=content.replace(/\r\n?/g,'\n');doc.append(title,byline,notice,text);requestAnimationFrame(()=>{if(state.readerId!==thisBook)return;const el=$('#readerScroll');const p=Math.max(0,Math.min(1,Number(state.history[id]?.progress)||0));el.scrollTop=p*Math.max(0,el.scrollHeight-el.clientHeight);updateProgress();});}
   catch{if(state.readerId===thisBook)setReaderError(id);}
 }
 function updateProgress(){if(state.readerId===null)return;const el=$('#readerScroll');if(!el.querySelector('.reader-text'))return;const max=el.scrollHeight-el.clientHeight;const progress=max>0?Math.max(0,Math.min(1,el.scrollTop/max)):1;const id=state.readerId;$('#readerProgressBar').style.width=(progress*100).toFixed(1)+'%';$('#readerProgress').textContent=Math.round(progress*100)+'% read';state.history[id]={book:state.history[id]?.book||bookById(id),progress};safeSet('history',state.history);renderContinue();}
 function closeReader(){state.readerId=null;$('#reader').hidden=true;$('#readerSettings').hidden=true;document.body.style.overflow='';if(state.page==='library')renderSaved();else if(state.books.length)renderBooks();renderContinue();}
-function bookmark(){if(state.readerId===null)return;updateProgress();const id=state.readerId;const progress=state.history[id]?.progress||0;safeSet('bookmark.'+id,progress);toast('Your place has been saved');}
+function bookmark(){if(state.readerId===null)return;updateProgress();const id=state.readerId;const progress=state.history[id]?.progress||0;safeSet('bookmark.'+id,progress);updateBookmarkAction();toast('Your place has been saved');}
 $$('[data-page]').forEach(btn=>btn.addEventListener('click',()=>setPage(btn.dataset.page)));
 $('#brandLink').addEventListener('click',e=>{e.preventDefault();setPage('home');});
 $('#heroExplore').addEventListener('click',()=>setPage('explore'));
@@ -69,6 +82,7 @@ $('#fontLarger').addEventListener('click',()=>{state.settings.size=Math.min(28,N
 $$('[data-font]').forEach(b=>b.addEventListener('click',()=>{state.settings.font=b.dataset.font;readSettings();}));
 $$('[data-theme]').forEach(b=>b.addEventListener('click',()=>{state.settings.theme=b.dataset.theme;readSettings();}));
 $('#bookmarkPosition').addEventListener('click',bookmark);
+$('#jumpBookmark').addEventListener('click',jumpBookmark);
 $('#readerScroll').addEventListener('scroll',()=>{if(scrollTick)return;scrollTick=true;requestAnimationFrame(()=>{scrollTick=false;updateProgress();});},{passive:true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('#readerSettings').hidden)$('#readerSettings').hidden=true;else if(!$('#reader').hidden)closeReader();}});
 document.addEventListener('click',e=>{if(!$('#readerSettings').hidden&&!e.target.closest('#readerSettings,#toggleSettings'))$('#readerSettings').hidden=true;});

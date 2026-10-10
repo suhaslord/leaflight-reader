@@ -41,6 +41,17 @@ const BASE=process.env.BASE_URL||'https://leaflight-reader.vercel.app';
       assert.equal(await page.locator('#reader').getAttribute('data-font'),'sans');
       await page.locator('#toggleSettings').click();
     });
+    await check('Bookmark navigation works',async()=>{
+      await page.locator('#readerScroll').evaluate(el=>el.scrollTop=el.scrollHeight*.2);
+      await page.waitForTimeout(200);
+      await page.locator('#bookmarkPosition').click();
+      assert.equal(await page.locator('#jumpBookmark').isVisible(),true);
+      await page.locator('#readerScroll').evaluate(el=>el.scrollTop=el.scrollHeight*.5);
+      await page.waitForTimeout(200);
+      await page.locator('#jumpBookmark').click();
+      await page.waitForTimeout(200);
+      assert.ok(parseInt(await page.locator('#readerProgress').innerText())<30);
+    });
     await check('Reader persists reading position',async()=>{
       await page.locator('#readerScroll').evaluate(el=>el.scrollTop=el.scrollHeight*.22);
       await page.waitForTimeout(300);
