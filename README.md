@@ -81,3 +81,17 @@ The catalog is a snapshot, not a live complete inventory; some titles only suppo
 Long Gutenberg editions are divided into small, independently laid-out sections. Full text remains available, but offscreen sections don't require expensive reflow when the reader font size, spacing, or margins change. Run `node tests/long-book-performance.cjs` against a local development server to stress-test an approximately 3.35 MB synthetic book on desktop and mobile.
 
 Run `node tests/accessibility-regression.cjs` to audit WCAG A/AA issues on desktop and mobile, including all reader themes and the settings panel. It uses `@axe-core/playwright`; automated checking does not replace manual accessibility review.
+
+### Book interior typography
+
+The reader identifies recognizable Project Gutenberg chapter, part, section,
+subtitle and scene-break markers. Chapter titles use display-serif typography,
+chapter numbers use compact sans-serif labels, and table-of-contents entries
+stay smaller than actual chapter openings. Clearly hard-wrapped prose is
+reflowed for small screens, while short verse and specially indented passages
+keep their original line breaks. The original source text and whitespace are
+preserved in the reader's DOM, aside from normalizing CRLF newlines.
+
+Run `node tests/reader-typography.cjs` against the local development server
+to verify the heading hierarchy, mobile styling, text preservation and
+bookmark interactions.

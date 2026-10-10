@@ -112,16 +112,147 @@ function readSettings(){
     },240);
   }
 }
-// Break long public-domain editions into contained text blocks.
-// This preserves the complete edition while avoiding a multi-megabyte
-// single text node that forces the browser to reflow the entire book.
+// Gutenberg editions are plain text. Identify reliable section markers and
+// style their existing words (rather than inventing or rewriting the book).
+const READER_CHAPTER=/^(?:CHAPTER|ADVENTURE|LETTER|STAVE|CANTO|SCENE)\s+(?:[IVXLCDM]+|\d+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|ELEVEN|TWELVE|THIRTEEN|FOURTEEN|FIFTEEN|TWENTY(?:[- ]\w+)?)\b[ .:\u2013\u2014-]*.{0,88}$/i;
+const READER_PART=/^(?:PART|BOOK|VOLUME|ACT)\s+(?:[IVXLCDM]+|\d+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|THE\s+(?:FIRST|SECOND|THIRD|FOURTH|FIFTH))\b.{0,82}$/i;
+const READER_SECTION=/^(?:CONTENTS|TABLE OF CONTENTS|PREFACE|FOREWORD|INTRODUCTION|PROLOGUE|EPILOGUE|AFTERWORD|DEDICATION|ACKNOWLEDGEMENTS?|CONCLUSION|APPENDIX(?:\s+[A-Z\d]+)?|THE END|FINIS|AUTHOR['\u2019]S NOTE|NOTES)\.?$/i;
+const READER_SCENE=/^(?:\*\s*){3,}$|^(?:\u2014\s*){3,}$/;
+function locateContentsEnd(text){
+  const contents=/^[ \t]*(?:CONTENTS|TABLE OF CONTENTS)[ \t]*$/im.exec(text.slice(0,Math.min(45000,text.length)));
+  if(!contents)return {start:-1,end:-1};
+  const firstLines=text.slice(contents.index+contents[0].length,contents.index+22000).split('\n');
+  const headers=firstLines.map(line=>line.trim()).filter(line=>line.length<110 && (READER_PART.test(line)||READER_CHAPTER.test(line)));
+  const candidates=[...headers.filter(h=>READER_PART.test(h)),...headers.filter(h=>READER_CHAPTER.test(h))];
+  for(const header of candidates.slice(0,16)){
+    const escaped=header.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&');
+    const matcher=new RegExp('^[ \\t]*'+escaped+'[ \\t]*$','gmi');
+    matcher.lastIndex=contents.index+contents[0].length;
+    const first=matcher.exec(text);
+    if(!first)continue;
+    let duplicate;
+    while((duplicate=matcher.exec(text))){
+      if(duplicate.index-first.index>35 && duplicate.index<text.length*.85){
+        return {start:contents.index,end:duplicate.index};
+      }
+    }
+  }
+  return {start:contents.index,end:-1};
+}
+function sectionKind(line,context) {
+  const value=line.trim();
+  if(context.tocEnd>=0 && context.position>context.tocStart)
+    context.inContents=context.position<context.tocEnd;
+  if(!value)return null;
+  if(value.length>115){
+    if(context.inContents && context.tocEnd<0)context.inContents=false;
+    context.pendingTitle=false;
+    return null;
+  }
+  // Project Gutenberg's license notices must remain ordinary, visible text.
+  if(/project gutenberg|copyright|trademark|ebook|e-text|^\*\*\* (?:start|end)/i.test(value))return null;
+  if(READER_SCENE.test(value))return 'scene';
+  if(READER_SECTION.test(value)){
+    if(/^contents|table of contents$/i.test(value))context.inContents=true;
+    context.pendingTitle=false;
+    return 'section';
+  }
+  if(READER_PART.test(value)){
+    context.pendingTitle=!context.inContents;
+    return context.inContents?'toc':'part';
+  }
+  if(READER_CHAPTER.test(value)){
+    context.pendingTitle=!context.inContents && !/[a-z]{3,}/.test(value.replace(/^(?:chapter|adventure|letter|stave|canto|scene)\s+/i,'').replace(/^[IVXLCDM\d\s.:-]+/i,''));
+    return context.inContents?'toc':'chapter';
+  }
+  // Subtitles must resemble a *title*, not just the first wrapped prose line.
+  const titleLike=value.length<=66 && value.split(/\s+/).length<=9 &&
+    !/[,;.!?:"\u201c\u201d\u2018\u2019]/.test(value) &&
+    /^[A-Z][A-Za-z'\u2019-]*(?:\s+(?:[A-Z][A-Za-z'\u2019-]*|a|an|and|the|of|for|in|on|to|with|by|from|at))*$/.test(value);
+  if(context.pendingTitle && titleLike){
+    context.pendingTitle=false;
+    return 'subtitle';
+  }
+  // A long natural-language paragraph marks the end of a printed contents page.
+  if(context.tocEnd<0 && context.inContents && value.length>35 &&
+    (/[.!?][\s\u201d\u2019]*$/.test(value) || /[,;:]\s+\w/.test(value)))context.inContents=false;
+  if(value.length>95 || (/[.!?]$/.test(value)&&!READER_CHAPTER.test(value)))context.pendingTitle=false;
+  return null;
+}
+// Gutenberg plain text is frequently hard-wrapped for 70-column terminals.
+// Reflow only clear, long prose paragraphs; keep verses and deliberate line
+// breaks untouched. The DOM textContent still contains every original newline.
+function appendReaderProse(parent,text){
+  if(!text)return;
+  const parts=text.split(/(\n{2,})/);
+  for(const part of parts){
+    if(!part)continue;
+    const lines=part.split('\n').filter(line=>line.trim());
+    const sample=lines.slice(0,-1);
+    const lengths=sample.map(line=>line.trim().length);
+    const mean=lengths.reduce((a,b)=>a+b,0)/Math.max(1,lengths.length);
+    const longWrapped=sample.length>=3 && mean>=54 && mean<=100 &&
+      lengths.filter(n=>n>=44 && n<=115).length>=Math.ceil(sample.length*.8);
+    const nonIndented=sample.filter(line=>/^[ \t]{4,}/.test(line)).length<=1;
+    const noTables=!/(?:\s{4,}\S+\s{4,}|\t|https?:\/\/|\.{5,})/.test(part);
+    if(longWrapped && nonIndented && noTables){
+      const flow=document.createElement('span');
+      flow.className='reader-paragraph-flow';
+      flow.textContent=part;
+      parent.append(flow);
+    }else parent.append(document.createTextNode(part));
+  }
+}
+function appendStyledBlock(fragment, source, context, offset){
+  const block=document.createElement('div');
+  block.className='reader-text-block';
+  let cursor=0,last=0;
+  while(cursor<source.length){
+    const newline=source.indexOf('\n',cursor);
+    const end=newline===-1?source.length:newline+1;
+    const line=source.slice(cursor,newline===-1?end:newline);
+    context.position=offset+cursor;
+    const kind=sectionKind(line,context);
+    if(kind){
+      if(cursor>last)appendReaderProse(block,source.slice(last,cursor));
+      const heading=document.createElement('span');
+      heading.className='reader-inbook reader-inbook-'+kind;
+      if(['chapter','part','section','subtitle'].includes(kind)){
+        heading.setAttribute('role','heading');
+        heading.setAttribute('aria-level',kind==='subtitle'?'3':'2');
+      }
+      // The original Gutenberg characters, whitespace and line endings remain
+      // byte-for-byte equivalent after CRLF normalization in textContent.
+      if((kind==='chapter'||kind==='part') && /^(?:\s*)(?:chapter|adventure|letter|stave|canto|scene|part|book|volume|act)\s+/i.test(line)){
+        const marker=line.match(/^(\s*((?:CHAPTER|ADVENTURE|LETTER|STAVE|CANTO|SCENE|PART|BOOK|VOLUME|ACT)\s+(?:[IVXLCDM]+|\d+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|ELEVEN|TWELVE|THIRTEEN|FOURTEEN|FIFTEEN|TWENTY(?:[- ]\w+)?|THE\s+(?:FIRST|SECOND|THIRD|FOURTH|FIFTH))\b[.:\u2014\u2013-]*\s*))(.*)$/i);
+        if(marker && marker[3].trim()){
+          const label=document.createElement('span');
+          label.className='reader-heading-label';label.textContent=marker[1];
+          const subtitle=document.createElement('span');
+          subtitle.className='reader-heading-name';subtitle.textContent=marker[3];
+          heading.append(label,subtitle);
+          heading.append(document.createTextNode(source.slice(cursor+line.length,end)));
+        }else heading.textContent=source.slice(cursor,end);
+      }else heading.textContent=source.slice(cursor,end);
+      block.append(heading);
+      last=end;
+    }
+    cursor=end;
+  }
+  if(last<source.length)appendReaderProse(block,source.slice(last));
+  fragment.append(block);
+}
+// Preserve the entire edition while rendering it in small, contained blocks.
+// Even multi-megabyte books remain responsive when typography is changed.
 function renderBookText(content){
   const wrapper=document.createElement('div');
   wrapper.className='reader-text';
   const text=content.replace(/\r\n?/g,'\n');
   const fragment=document.createDocumentFragment();
+  const toc=locateContentsEnd(text);
+  const context={inContents:false,pendingTitle:false,tocStart:toc.start,tocEnd:toc.end,position:0};
   let start=0;
-  const target=11000, min=6000, max=14500;
+  const target=11000,min=6000,max=14500;
   while(start<text.length){
     let end=Math.min(start+target,text.length);
     if(end<text.length){
@@ -132,10 +263,7 @@ function renderBookText(content){
         if(next>=0 && next<start+max)end=next+1;
       }
     }
-    const block=document.createElement('div');
-    block.className='reader-text-block';
-    block.textContent=text.slice(start,end);
-    fragment.append(block);
+    appendStyledBlock(fragment,text.slice(start,end),context,start);
     start=end;
   }
   wrapper.append(fragment);
