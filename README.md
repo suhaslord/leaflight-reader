@@ -12,7 +12,7 @@ A cozy, responsive web library for discovering and reading free classic books.
 - Loading, retry, and unavailable-book states
 
 ## Data and rights
-The searchable catalog comes from [Gutendex](https://gutendex.com/). Actual book text is fetched only when a reader opens a book from [Project Gutenberg](https://www.gutenberg.org/) and displayed with its included licensing notices. Some editions have no plain-text version, and they may be opened at Gutenberg instead. Books are not uploaded to this repository. Most Project Gutenberg texts are freely reusable in the United States, but copyright status can differ internationally. Always check applicable laws.
+The searchable catalog is a snapshot of English-language public-domain book metadata from [Project Gutenberg](https://www.gutenberg.org/). The homepage ordering is seeded with popular Gutendex titles. Actual book text is fetched only when a reader opens a book from [Project Gutenberg](https://www.gutenberg.org/) and displayed with its included licensing notices. Search covers more than 20,000 catalog entries. Some editions have no plain-text version, and they may be opened at Gutenberg instead. Books are not uploaded to this repository. Most Project Gutenberg texts are freely reusable in the United States, but copyright status can differ internationally. Always check applicable laws.
 
 ## Run locally
 Install Node 20+ and a local dev server supporting Vercel API routes, such as the Vercel CLI:
