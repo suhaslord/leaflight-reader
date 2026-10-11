@@ -8,7 +8,7 @@
   <title>Leaflight — a little more room to read</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/styles.css">
-  <script defer src="/assets/app.js"></script>
+  <script defer src="/assets/reader-edition.js"></script>\n  <script defer src="/assets/app.js"></script>
 </head>
 <body>
   <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
@@ -54,30 +54,16 @@
 
       <div class="content">
         <section class="hero" id="hero">
-          <div class="hero-copy"><div class="eyebrow"><span class="tiny-star">✦</span> WELCOME TO YOUR NEXT CHAPTER</div>
-            <h1>Between the pages,<br><em>find yourself.</em></h1>
-            <p>Thousands of timeless stories. No subscriptions, no noise. Just you and a really good book.</p>
-            <button class="hero-button" id="heroExplore">Find your next read <svg><use href="#ico-arrow"/></svg></button>
+          <div class="hero-copy"><div class="eyebrow">THE OPEN READING ROOM <span class="tiny-star">—</span> EST. 2026</div>
+            <h1>A good book.<br><em>Nothing else.</em></h1>
+            <p>78,000+ public-domain books. Real editions, original covers, and a calm place to read.</p>
+            <button class="hero-button" id="heroExplore">Browse the shelves <svg><use href="#ico-arrow"/></svg></button>
           </div>
-          <div class="hero-art" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="hero-book hero-book-back"><div class="hero-book-inner">THE<br>ART OF<br>WONDER</div></div><div class="hero-book hero-book-front"><div class="hero-book-mini">A COLLECTION OF CLASSICS</div><div class="hero-book-line"></div><div class="hero-book-title">Stories<br>worth<br>keeping.</div><span class="hero-book-flower">✿</span></div><div class="sparkle spark-one">✧</div><div class="sparkle spark-two">✦</div></div>
-        </section>
-
-        <section class="ai-concierge" id="aiConcierge" aria-labelledby="aiTitle">
-          <div class="ai-header"><div class="ai-symbol" aria-hidden="true">✧</div><div class="ai-heading"><div class="eyebrow">YOUR PERSONAL BOOK GUIDE</div><h2 id="aiTitle">Not sure what to read? <em>Just ask.</em></h2><p>Tell me the mood, plot, or world you're looking for. I'll find a story for you.</p></div><span id="aiMode" class="ai-mode">Smart book matching</span></div>
-          <form id="aiForm" class="ai-form">
-            <label class="sr-only" for="aiPrompt">Describe your next read</label>
-            <textarea id="aiPrompt" maxlength="320" rows="2" required placeholder="I want a cozy mystery with clever characters and a little adventure..."></textarea>
-            <button id="aiSubmit" type="submit"><span>Find my book</span><span aria-hidden="true">✦</span></button>
-          </form>
-          <div class="ai-prompts" aria-label="Try a reading idea">
-            <button type="button" data-ai-prompt="a clever detective mystery full of suspense">A clever mystery</button>
-            <button type="button" data-ai-prompt="cozy heartwarming stories about friendship">Something comforting</button>
-            <button type="button" data-ai-prompt="mind bending science fiction and adventure">A different world</button>
-          </div>
-          <div class="ai-response" id="aiResponse" hidden aria-live="polite">
-            <div class="ai-response-heading"><div><div class="eyebrow">BOOKS FOR YOUR MOOD</div><h3 id="aiResponseTitle">A few picks for you</h3><p id="aiIntro"></p></div><span class="ai-response-tag" id="aiResponseTag">Book matching</span></div>
-            <div class="ai-results" id="aiResults"></div>
-          </div>
+          <div class="hero-art" aria-hidden="true">
+             <span class="hero-art-label">FROM THE COLLECTION · NO. 001</span>
+             <div class="hero-edition"><img src="https://www.gutenberg.org/cache/epub/1342/pg1342.cover.medium.jpg" width="204" height="308" alt="" loading="eager"></div>
+             <span class="hero-edition-caption">PRIDE AND PREJUDICE · JANE AUSTEN</span>
+           </div>
         </section>
 
         <section class="reading-banner" id="continueBanner" hidden>
@@ -99,11 +85,36 @@
             <button class="chip" data-topic="Romance" aria-pressed="false">Romance</button>
             <button class="chip" data-topic="Poetry" aria-pressed="false">Poetry</button>
             <button class="chip" data-topic="History" aria-pressed="false">History</button>
-          </div>
+          <label class="language-picker" for="languageFilter"><span>Language</span>
+            <select id="languageFilter" aria-label="Filter books by language">
+              <option value="all">All languages</option><option value="en">English</option><option value="fr">Français</option>
+              <option value="de">Deutsch</option><option value="es">Español</option><option value="it">Italiano</option>
+              <option value="fi">Suomi</option><option value="pt">Português</option><option value="nl">Nederlands</option>
+              <option value="zh">中文</option><option value="hu">Magyar</option>
+            </select>
+          </label></div>
           <div class="books-grid" id="booksGrid" aria-live="polite"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
           <div class="grid-status" id="gridStatus" hidden></div>
           <button class="load-more" id="loadMore" hidden>Show more books <span>↓</span></button>
         </section>
+        <section class="ai-concierge" id="aiConcierge" aria-labelledby="aiTitle">
+          <div class="ai-header"><div class="ai-symbol" aria-hidden="true">?</div><div class="ai-heading"><div class="eyebrow">THE RECOMMENDATION DESK</div><h2 id="aiTitle">Need a recommendation? <em>Ask the librarian.</em></h2><p>Describe the book you are after, and we will search the shelves.</p></div><span id="aiMode" class="ai-mode">Smart book matching</span></div>
+          <form id="aiForm" class="ai-form">
+            <label class="sr-only" for="aiPrompt">Describe your next read</label>
+            <textarea id="aiPrompt" maxlength="320" rows="2" required placeholder="I want a cozy mystery with clever characters and a little adventure..."></textarea>
+            <button id="aiSubmit" type="submit"><span>Find my book</span><span aria-hidden="true">→</span></button>
+          </form>
+          <div class="ai-prompts" aria-label="Try a reading idea">
+            <button type="button" data-ai-prompt="a clever detective mystery full of suspense">A clever mystery</button>
+            <button type="button" data-ai-prompt="cozy heartwarming stories about friendship">Something comforting</button>
+            <button type="button" data-ai-prompt="mind bending science fiction and adventure">A different world</button>
+          </div>
+          <div class="ai-response" id="aiResponse" hidden aria-live="polite">
+            <div class="ai-response-heading"><div><div class="eyebrow">BOOKS FOR YOUR MOOD</div><h3 id="aiResponseTitle">A few picks for you</h3><p id="aiIntro"></p></div><span class="ai-response-tag" id="aiResponseTag">Book matching</span></div>
+            <div class="ai-results" id="aiResults"></div>
+          </div>
+        </section>
+
         <footer class="site-footer"><span>✳ leaflight. — made for the love of reading</span><span>Books and catalog from <a href="https://www.gutenberg.org" target="_blank" rel="noopener noreferrer">Project Gutenberg</a></span></footer>
       </div>
     </main>
@@ -131,6 +142,8 @@
       <div><span class="settings-label">Page color</span><div class="segmented"><button data-theme="paper" class="active">Paper</button><button data-theme="sepia">Sepia</button><button data-theme="night">Night</button></div></div>
       <div><span class="settings-label">Line spacing</span><div class="segmented"><button data-spacing="compact">Tight</button><button data-spacing="comfortable" class="active">Normal</button><button data-spacing="airy">Airy</button></div></div>
       <div><span class="settings-label">Page margins</span><div class="segmented"><button data-width="narrow">Narrow</button><button data-width="standard" class="active">Standard</button><button data-width="wide">Wide</button></div></div>
+      <div><span class="settings-label">Edition</span><div class="segmented"><button data-edition="illustrated" class="active">Designed</button><button data-edition="text">Original text</button></div></div>
+      <p class="reader-edition-hint" id="editionStatus" aria-live="polite">Designed edition uses Gutenberg's original chapters and illustrations when available.</p>
       <p class="reader-settings-note">Your settings and reading progress are saved on this device.</p>
     </div>
     <div id="readerScroll" class="reader-scroll" tabindex="0" aria-label="Book text and reading area">

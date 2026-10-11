@@ -8,10 +8,12 @@ function displayAuthor(raw){
 const TAGS={'Fiction':1,'Adventure':2,'Mystery':4,'Science fiction':8,'Romance':16,'Poetry':32,'History':64};
 module.exports = async function books(req,res){
   if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});
-  const page=Math.max(1,Math.min(2000,Number.parseInt(req.query.page,10)||1));
+  const page=Math.max(1,Math.min(5000,Number.parseInt(req.query.page,10)||1));
   const search=String(req.query.search||'').trim().slice(0,120).toLowerCase();
   const words=search.split(/\s+/).filter(Boolean);
   const topic=String(req.query.topic||'').trim().slice(0,60);
+  const language=String(req.query.language||'all').trim().toLowerCase().slice(0,12);
+  if(language!=='all'&&!/^[a-z]{2,3}$/.test(language))return res.status(400).json({error:'Invalid language'});
   const ids=String(req.query.ids||'').trim();
   if(ids&&!/^\d{1,7}(,\d{1,7}){0,19}$/.test(ids))return res.status(400).json({error:'Invalid book IDs'});
   const requested=ids?new Set(ids.split(',').map(Number)):null;
@@ -19,14 +21,15 @@ module.exports = async function books(req,res){
   const results=[];
   for(const row of catalog){
     if(requested&&!requested.has(row[0]))continue;
+    if(language!=='all'&&String(row[6]||'en').toLowerCase()!==language)continue;
     if(topicFlag&&!(row[4]&topicFlag))continue;
     if(words.length){const haystack=(row[1]+' '+row[2]+' '+row[3]).toLowerCase();if(!words.every(word=>haystack.includes(word)))continue;}
     results.push(row);
   }
   const count=results.length;
   const limit=25;
-  const slice=results.slice((page-1)*limit,page*limit).map(([id,title,author,subjects,tags,image])=>({
-    id,title,authors:[{name:displayAuthor(author||'Unknown author')}],subjects:subjects?[subjects]:[],languages:['en'],downloads:0,image:image||''
+  const slice=results.slice((page-1)*limit,page*limit).map(([id,title,author,subjects,tags,image,lang])=>({
+    id,title,authors:[{name:displayAuthor(author||'Unknown author')}],subjects:subjects?[subjects]:[],languages:[lang||'en'],downloads:0,image:'https://www.gutenberg.org/cache/epub/'+id+'/pg'+id+'.cover.medium.jpg'
   }));
   res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
   return res.status(200).json({count,next:page*limit<count,results:slice});

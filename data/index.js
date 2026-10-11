@@ -1,1 +1,1 @@
-module.exports=require('./catalog.cjs');
+module.exports=require('./catalog-full.cjs');

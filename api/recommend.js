@@ -1,5 +1,5 @@
 'use strict';
-const catalog=require('../data');
+const catalog=require('../data/catalog.cjs');
 const {displayAuthor}=require('./books');
 const TAGS=[
   {flag:1,words:['fiction','novel','story','stories','literature','classic']},

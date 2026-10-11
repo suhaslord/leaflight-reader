@@ -134,3 +134,40 @@ reading with a link for any unverified illustration placeholder.
 
 Run npm test for manifest checks and tests/illustration-audit.cjs for desktop
 and mobile browser testing with Playwright and Gutenberg network access.
+
+## Full catalog and original book imagery (2026-10-11)
+
+Leaflight includes a snapshot of 78,282 Project Gutenberg text records,
+generated from Gutenberg's official public catalog (pg_catalog.csv.gz).
+It preserves the curated front-page order, adds other languages and
+a language filter, and supports searching through the expanded catalog.
+The catalog snapshot is not automatically refreshed.
+
+Every catalog card attempts to load Gutenberg's canonical generated cover
+image at https://www.gutenberg.org/cache/epub/{id}/pg{id}.cover.medium.jpg.
+These are actual images from Gutenberg. A simple typeset cover remains
+when an image is missing or blocked. Some covers are generated publisher
+placeholders, not authentic historical jacket art.
+
+### Images inside books
+
+Where Gutenberg provides an illustrated HTML edition, Leaflight fetches
+that official edition in addition to the plain text. The renderer rebuilds
+chapter structure and embedded image URLs using a tight element and URL
+allowlist. It does not execute or insert fetched HTML directly.
+Reading settings allow switching between designed HTML and original text.
+
+This is one generic reader for the entire catalog, NOT 78,282 hand-reviewed
+or guaranteed-illustrated books. Some editions have no artwork, are
+unavailable, or use unusual formats. Text-only books retain the plain-text
+fallback when available, with a link to Gutenberg. The site does not
+generate fake illustrations, and source credits remain accessible.
+
+The Gutenberg catalog and source editions are subject to copyright rules
+in the reader's jurisdiction.
+
+### Testing
+
+Run npm test for catalog metadata and API checks. Browser tests include
+tests/cover-design-audit.cjs, tests/universal-images-audit.cjs and
+tests/edition-security-audit.cjs. Playwright is required for browser QA.

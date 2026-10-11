@@ -56,6 +56,7 @@ try{
  await check('Unavailable book shows Gutenberg fallback without crash',async()=>{
    await page.unrouteAll({behavior:'wait'});
    await page.route('**/api/read?id=*',route=>route.fulfill({status:415,contentType:'text/plain',body:'No text edition'}));
+   await page.route('**/api/edition?id=*',route=>route.fulfill({status:415,contentType:'text/plain',body:'No HTML edition'}));
    await page.locator('#booksGrid [data-open]').first().click();
    await page.locator('.reading-error').waitFor({timeout:12000});
    const href=await page.locator('.reading-error a').getAttribute('href');assert.match(href,/gutenberg.org\/ebooks\/\d+/);
